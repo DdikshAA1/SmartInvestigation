@@ -3,20 +3,34 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Smart Investigation & Policing Assistant API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Dashboard overview
+  - name: cases
+    description: Cybercrime case management
+  - name: complaints
+    description: Citizen complaints
+  - name: suspects
+    description: Suspect management
+  - name: alerts
+    description: Threat alerts
+  - name: osint
+    description: OSINT analysis
+  - name: crime-patterns
+    description: Crime pattern analytics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +38,507 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard overview statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /cases:
+    get:
+      operationId: listCases
+      tags: [cases]
+      summary: List cybercrime cases
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: priority
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+    post:
+      operationId: createCase
+      tags: [cases]
+      summary: Create a new cybercrime case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseInput"
+      responses:
+        "201":
+          description: Case created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+
+  /cases/{id}:
+    get:
+      operationId: getCase
+      tags: [cases]
+      summary: Get case details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "404":
+          description: Case not found
+    patch:
+      operationId: updateCase
+      tags: [cases]
+      summary: Update case details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseUpdate"
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+    delete:
+      operationId: deleteCase
+      tags: [cases]
+      summary: Delete a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /cases/{id}/suspects:
+    get:
+      operationId: getCaseSuspects
+      tags: [cases]
+      summary: Get suspects linked to a case
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Suspects linked to case
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Suspect"
+
+  /complaints:
+    get:
+      operationId: listComplaints
+      tags: [complaints]
+      summary: List citizen complaints
+      parameters:
+        - name: urgency
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of complaints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Complaint"
+    post:
+      operationId: createComplaint
+      tags: [complaints]
+      summary: Submit a citizen complaint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintInput"
+      responses:
+        "201":
+          description: Complaint submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+
+  /complaints/{id}:
+    get:
+      operationId: getComplaint
+      tags: [complaints]
+      summary: Get complaint details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Complaint details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateComplaint
+      tags: [complaints]
+      summary: Update complaint status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintUpdate"
+      responses:
+        "200":
+          description: Updated complaint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+
+  /complaints/{id}/analyze:
+    post:
+      operationId: analyzeComplaint
+      tags: [complaints]
+      summary: AI-powered NLP analysis of a complaint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintAnalysis"
+
+  /suspects:
+    get:
+      operationId: listSuspects
+      tags: [suspects]
+      summary: List suspects
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: riskLevel
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of suspects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Suspect"
+    post:
+      operationId: createSuspect
+      tags: [suspects]
+      summary: Add a suspect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuspectInput"
+      responses:
+        "201":
+          description: Suspect created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Suspect"
+
+  /suspects/{id}:
+    get:
+      operationId: getSuspect
+      tags: [suspects]
+      summary: Get suspect details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Suspect details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Suspect"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSuspect
+      tags: [suspects]
+      summary: Update suspect record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuspectUpdate"
+      responses:
+        "200":
+          description: Updated suspect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Suspect"
+
+  /suspects/network:
+    get:
+      operationId: getSuspectNetwork
+      tags: [suspects]
+      summary: Get suspect connection network data
+      responses:
+        "200":
+          description: Network graph data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuspectNetwork"
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List threat alerts
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+    post:
+      operationId: createAlert
+      tags: [alerts]
+      summary: Create a threat alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertInput"
+      responses:
+        "201":
+          description: Alert created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}:
+    patch:
+      operationId: updateAlert
+      tags: [alerts]
+      summary: Update alert status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertUpdate"
+      responses:
+        "200":
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /osint/analyze:
+    post:
+      operationId: analyzeOsint
+      tags: [osint]
+      summary: AI-powered OSINT analysis of a social media target
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OsintRequest"
+      responses:
+        "200":
+          description: OSINT analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OsintResult"
+
+  /osint/reports:
+    get:
+      operationId: listOsintReports
+      tags: [osint]
+      summary: List previous OSINT analysis reports
+      responses:
+        "200":
+          description: OSINT reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OsintResult"
+
+  /crime-patterns:
+    get:
+      operationId: listCrimePatterns
+      tags: [crime-patterns]
+      summary: Get crime pattern data and trends
+      responses:
+        "200":
+          description: Crime patterns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CrimePattern"
+
+  /crime-patterns/hotspots:
+    get:
+      operationId: getCrimeHotspots
+      tags: [crime-patterns]
+      summary: Get geographic crime hotspot data
+      responses:
+        "200":
+          description: Hotspot data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CrimeHotspot"
+
+  /crime-patterns/predictions:
+    get:
+      operationId: getCrimePredictions
+      tags: [crime-patterns]
+      summary: Get AI-powered crime predictions for upcoming period
+      responses:
+        "200":
+          description: Crime predictions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrimePredictions"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +549,288 @@ components:
       required:
         - status
 
+    DashboardStats:
+      type: object
+      required: [totalCases, activeCases, openComplaints, highPriorityAlerts, suspectsTracked, resolvedThisMonth, casesByStatus, casesByType]
+      properties:
+        totalCases:
+          type: integer
+        activeCases:
+          type: integer
+        openComplaints:
+          type: integer
+        highPriorityAlerts:
+          type: integer
+        suspectsTracked:
+          type: integer
+        resolvedThisMonth:
+          type: integer
+        casesByStatus:
+          type: array
+          items:
+            type: object
+            required: [status, count]
+            properties:
+              status: { type: string }
+              count: { type: integer }
+        casesByType:
+          type: array
+          items:
+            type: object
+            required: [type, count]
+            properties:
+              type: { type: string }
+              count: { type: integer }
+
+    ActivityItem:
+      type: object
+      required: [id, type, title, description, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        description: { type: string }
+        severity: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    Case:
+      type: object
+      required: [id, title, type, status, priority, description, officerAssigned, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        type: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        description: { type: string }
+        officerAssigned: { type: string }
+        suspectIds: { type: ["string", "null"] }
+        evidence: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    CaseInput:
+      type: object
+      required: [title, type, priority, description, officerAssigned]
+      properties:
+        title: { type: string }
+        type: { type: string }
+        priority: { type: string }
+        description: { type: string }
+        officerAssigned: { type: string }
+        notes: { type: string }
+
+    CaseUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        description: { type: string }
+        officerAssigned: { type: string }
+        notes: { type: string }
+        evidence: { type: string }
+
+    Complaint:
+      type: object
+      required: [id, complainantName, contactInfo, description, category, urgency, status, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        complainantName: { type: string }
+        contactInfo: { type: string }
+        description: { type: string }
+        category: { type: string }
+        urgency: { type: string }
+        status: { type: string }
+        keywords: { type: ["string", "null"] }
+        aiSummary: { type: ["string", "null"] }
+        linkedCaseId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    ComplaintInput:
+      type: object
+      required: [complainantName, contactInfo, description]
+      properties:
+        complainantName: { type: string }
+        contactInfo: { type: string }
+        description: { type: string }
+
+    ComplaintUpdate:
+      type: object
+      properties:
+        status: { type: string }
+        urgency: { type: string }
+        category: { type: string }
+        linkedCaseId: { type: integer }
+        notes: { type: string }
+
+    ComplaintAnalysis:
+      type: object
+      required: [complaintId, urgency, category, keywords, summary, recommendedAction]
+      properties:
+        complaintId: { type: integer }
+        urgency: { type: string }
+        category: { type: string }
+        keywords: { type: array, items: { type: string } }
+        summary: { type: string }
+        recommendedAction: { type: string }
+        sentiment: { type: string }
+
+    Suspect:
+      type: object
+      required: [id, name, alias, riskLevel, status, knownAssociates, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        alias: { type: ["string", "null"] }
+        riskLevel: { type: string }
+        status: { type: string }
+        nationalId: { type: ["string", "null"] }
+        knownAssociates: { type: ["string", "null"] }
+        socialMediaProfiles: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        caseIds: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    SuspectInput:
+      type: object
+      required: [name, riskLevel]
+      properties:
+        name: { type: string }
+        alias: { type: string }
+        riskLevel: { type: string }
+        nationalId: { type: string }
+        socialMediaProfiles: { type: string }
+        notes: { type: string }
+
+    SuspectUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        alias: { type: string }
+        riskLevel: { type: string }
+        status: { type: string }
+        knownAssociates: { type: string }
+        socialMediaProfiles: { type: string }
+        notes: { type: string }
+
+    SuspectNetwork:
+      type: object
+      required: [nodes, edges]
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            required: [id, name, riskLevel]
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              riskLevel: { type: string }
+              status: { type: string }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [source, target, relationship]
+            properties:
+              source: { type: integer }
+              target: { type: integer }
+              relationship: { type: string }
+
+    Alert:
+      type: object
+      required: [id, title, description, severity, status, source, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        severity: { type: string }
+        status: { type: string }
+        source: { type: string }
+        linkedCaseId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    AlertInput:
+      type: object
+      required: [title, description, severity, source]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        severity: { type: string }
+        source: { type: string }
+        linkedCaseId: { type: integer }
+
+    AlertUpdate:
+      type: object
+      properties:
+        status: { type: string }
+        description: { type: string }
+
+    OsintRequest:
+      type: object
+      required: [target, targetType]
+      properties:
+        target: { type: string }
+        targetType: { type: string }
+        context: { type: string }
+
+    OsintResult:
+      type: object
+      required: [id, target, targetType, riskScore, summary, flags, createdAt]
+      properties:
+        id: { type: integer }
+        target: { type: string }
+        targetType: { type: string }
+        riskScore: { type: integer }
+        summary: { type: string }
+        flags: { type: array, items: { type: string } }
+        suspiciousActivity: { type: array, items: { type: string } }
+        networkConnections: { type: array, items: { type: string } }
+        recommendation: { type: string }
+        createdAt: { type: string }
+
+    CrimePattern:
+      type: object
+      required: [id, month, crimeType, count, changePercent]
+      properties:
+        id: { type: integer }
+        month: { type: string }
+        crimeType: { type: string }
+        count: { type: integer }
+        changePercent: { type: number }
+
+    CrimeHotspot:
+      type: object
+      required: [id, area, district, lat, lng, incidentCount, riskLevel, primaryCrimeType]
+      properties:
+        id: { type: integer }
+        area: { type: string }
+        district: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        incidentCount: { type: integer }
+        riskLevel: { type: string }
+        primaryCrimeType: { type: string }
+
+    CrimePredictions:
+      type: object
+      required: [period, predictions, highRiskAreas, recommendations]
+      properties:
+        period: { type: string }
+        predictions:
+          type: array
+          items:
+            type: object
+            required: [crimeType, predictedCount, confidence, trend]
+            properties:
+              crimeType: { type: string }
+              predictedCount: { type: integer }
+              confidence: { type: number }
+              trend: { type: string }
+        highRiskAreas: { type: array, items: { type: string } }
+        recommendations: { type: array, items: { type: string } }
