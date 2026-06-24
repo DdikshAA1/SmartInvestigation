@@ -112,18 +112,20 @@ Complaint text: "${complaint.description}"
 
 Return ONLY valid JSON, no markdown, no explanation.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    max_completion_tokens: 512,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  let analysis = { urgency: "medium", category: "other", keywords: [], summary: "", recommendedAction: "", sentiment: "neutral" };
+  let analysis: { urgency: string; category: string; keywords: string[]; summary: string; recommendedAction: string; sentiment: string } = {
+    urgency: "medium", category: "other", keywords: [], summary: "AI analysis unavailable.", recommendedAction: "Configure OpenAI integration.", sentiment: "neutral"
+  };
   try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5-mini",
+      max_completion_tokens: 512,
+      messages: [{ role: "user", content: prompt }],
+    });
     const content = response.choices[0]?.message?.content ?? "{}";
     analysis = JSON.parse(content);
-  } catch {
-    req.log.warn("Failed to parse AI response for complaint analysis");
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    req.log.warn({ err: msg }, "AI complaint analysis unavailable");
   }
 
   await db.update(complaintsTable).set({

@@ -1,0 +1,9 @@
+# Replit integration removed.
+# Use standard pnpm workspace commands.
+
+# Run the API server:
+# pnpm --filter @workspace/api-server run dev
+
+# Run the dashboard:
+# pnpm --filter @workspace/investigation-dashboard run dev
+a 

@@ -30,12 +30,6 @@ ${patternSummary || "No historical data available yet."}
 
 Return ONLY valid JSON, no markdown.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    max_completion_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
-  });
-
   let predictions = {
     period: "Next 30 days",
     predictions: [
@@ -48,10 +42,16 @@ Return ONLY valid JSON, no markdown.`;
   };
 
   try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5-mini",
+      max_completion_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
+    });
     const content = response.choices[0]?.message?.content ?? "{}";
     predictions = JSON.parse(content);
-  } catch {
-    // use defaults
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    req.log.warn({ err: msg }, "AI crime predictions unavailable, using statistical defaults");
   }
 
   res.json(predictions);

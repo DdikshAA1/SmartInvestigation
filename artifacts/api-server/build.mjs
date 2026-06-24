@@ -100,6 +100,7 @@ async function buildAll() {
       "puppeteer",
       "puppeteer-core",
       "electron",
+      "@electric-sql/pglite",
     ],
     sourcemap: "linked",
     plugins: [

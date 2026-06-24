@@ -29,26 +29,26 @@ ${context ? `Additional Context: ${context}` : ""}
 
 Simulate a realistic OSINT analysis based on the target type. Return ONLY valid JSON, no markdown, no explanation.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    max_completion_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
-  });
-
   let analysis = {
     riskScore: 50,
-    summary: "Analysis completed.",
-    flags: [],
+    summary: "AI analysis unavailable — OpenAI integration not configured.",
+    flags: ["AI integration not configured"],
     suspiciousActivity: [],
     networkConnections: [],
-    recommendation: "Continue monitoring.",
+    recommendation: "Configure OpenAI integration to enable AI-powered analysis.",
   };
 
   try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5-mini",
+      max_completion_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
+    });
     const content = response.choices[0]?.message?.content ?? "{}";
     analysis = JSON.parse(content);
-  } catch {
-    req.log.warn("Failed to parse AI OSINT analysis response");
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    req.log.warn({ err: msg }, "AI OSINT analysis unavailable");
   }
 
   const [report] = await db.insert(osintReportsTable).values({

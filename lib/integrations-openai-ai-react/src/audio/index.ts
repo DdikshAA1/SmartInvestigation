@@ -1,5 +1,5 @@
 /**
- * Voice chat client utilities for Replit AI Integrations.
+ * Voice chat client utilities for AI integrations.
  * 
  * Usage:
  * 1. Copy audio-playback-worklet.js to your public/ folder
