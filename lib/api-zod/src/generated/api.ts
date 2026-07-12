@@ -463,6 +463,7 @@ export const AnalyzeOsintResponse = zod.object({
   suspiciousActivity: zod.array(zod.string()).optional(),
   networkConnections: zod.array(zod.string()).optional(),
   recommendation: zod.string().optional(),
+  findings: zod.string().optional(),
   createdAt: zod.string(),
 });
 
@@ -479,6 +480,7 @@ export const ListOsintReportsResponseItem = zod.object({
   suspiciousActivity: zod.array(zod.string()).optional(),
   networkConnections: zod.array(zod.string()).optional(),
   recommendation: zod.string().optional(),
+  findings: zod.string().optional(),
   createdAt: zod.string(),
 });
 export const ListOsintReportsResponse = zod.array(ListOsintReportsResponseItem);

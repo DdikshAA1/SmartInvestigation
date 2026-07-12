@@ -1,18 +1,33 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { 
-  Shield, 
-  LayoutDashboard, 
-  Briefcase, 
-  MessageSquareWarning, 
-  Users, 
-  TriangleAlert, 
-  Network, 
+import {
+  Shield,
+  LayoutDashboard,
+  Briefcase,
+  MessageSquareWarning,
+  Users,
+  TriangleAlert,
+  Network,
   LineChart,
   LogOut,
-  Bell
+  Bell,
+  Menu,
 } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarGroup, SidebarGroupContent, SidebarFooter } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarFooter,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
+// import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { name: "Command Center", path: "/", icon: LayoutDashboard },
@@ -26,12 +41,15 @@ const NAV_ITEMS = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const isMobile = useIsMobile();
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background overflow-hidden">
-        <Sidebar className="border-r border-border bg-card">
+      <div className="flex min-h-screen w-full bg-background">
+        <Sidebar collapsible="offcanvas" className="border-r border-border bg-card">
+
           <SidebarHeader className="p-4 border-b border-border">
+
             <div className="flex items-center gap-3">
               <div className="bg-primary/10 p-2 rounded-md">
                 <Shield className="h-6 w-6 text-primary" />
@@ -87,9 +105,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
 
-        <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0 min-h-screen">
           <header className="h-16 border-b border-border bg-background flex items-center justify-between px-6 shrink-0">
             <div className="flex items-center gap-2">
+              <SidebarTrigger
+                className="mr-1 md:hidden h-9 w-9 rounded-md hover:bg-muted transition-colors"
+                aria-label="Toggle navigation"
+              >
+                <Menu className="h-4 w-4" />
+              </SidebarTrigger>
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs font-mono font-medium text-muted-foreground tracking-widest uppercase">System Nominal</span>
             </div>
@@ -106,7 +130,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
           
-          <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+          <div className="flex-1 overflow-y-auto p-6 scroll-smooth md:p-6 sm:p-4">
             <div className="max-w-7xl mx-auto">
               {children}
             </div>

@@ -792,6 +792,7 @@ components:
         suspiciousActivity: { type: array, items: { type: string } }
         networkConnections: { type: array, items: { type: string } }
         recommendation: { type: string }
+        findings: { type: string }
         createdAt: { type: string }
 
     CrimePattern:

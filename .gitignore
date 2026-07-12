@@ -53,3 +53,9 @@ Thumbs.db
 .replitignore
 replit.md
 **/.replit-artifact
+
+# local databases
+pglite-data/
+pglite-data
+*.pid
+

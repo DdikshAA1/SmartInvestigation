@@ -16,5 +16,6 @@ export interface OsintResult {
   suspiciousActivity?: string[];
   networkConnections?: string[];
   recommendation?: string;
+  findings?: string;
   createdAt: string;
 }

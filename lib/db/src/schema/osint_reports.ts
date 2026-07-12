@@ -12,6 +12,7 @@ export const osintReportsTable = pgTable("osint_reports", {
   suspiciousActivity: text("suspicious_activity").notNull().default("[]"),
   networkConnections: text("network_connections").notNull().default("[]"),
   recommendation: text("recommendation").notNull().default(""),
+  findings: text("findings").notNull().default("{}"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS "osint_reports" (
 	"suspicious_activity" text DEFAULT '[]' NOT NULL,
 	"network_connections" text DEFAULT '[]' NOT NULL,
 	"recommendation" text DEFAULT '' NOT NULL,
+	"findings" text DEFAULT '{}' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 CREATE TABLE IF NOT EXISTS "crime_hotspots" (
@@ -107,6 +108,12 @@ CREATE TABLE IF NOT EXISTS "messages" (
 
 await client.waitReady;
 await client.exec(migrationSql);
+// Run migration to add findings column to osint_reports if it doesn't exist
+try {
+  await client.exec('ALTER TABLE "osint_reports" ADD COLUMN IF NOT EXISTS "findings" text DEFAULT \'{}\' NOT NULL;');
+} catch (e) {
+  console.warn("Migration warning for findings column:", e);
+}
 
 // Check and Seed Database
 const result = await client.query("SELECT COUNT(*) FROM cases;");
