@@ -2,7 +2,9 @@ import { drizzle } from "drizzle-orm/pglite";
 import { PGlite } from "@electric-sql/pglite";
 import * as schema from "./schema";
 
-const dataDir = process.env.PG_DATA_DIR || "./pglite-data";
+const dataDir = process.env.VERCEL
+  ? "/tmp/pglite-data"
+  : (process.env.PG_DATA_DIR || "./pglite-data");
 
 export const client = new PGlite(dataDir);
 export const db = drizzle(client, { schema });
