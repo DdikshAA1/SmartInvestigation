@@ -12,6 +12,7 @@ import {
   LogOut,
   Bell,
   Menu,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { name: "Threat Alerts", path: "/alerts", icon: TriangleAlert },
   { name: "Suspect Database", path: "/suspects", icon: Users },
   { name: "OSINT Analysis", path: "/osint", icon: Network },
+  { name: "Confidential Chat", path: "/chat", icon: MessageSquare },
   { name: "Citizen Complaints", path: "/complaints", icon: MessageSquareWarning },
   { name: "Crime Analytics", path: "/crime-patterns", icon: LineChart },
 ];

@@ -13,6 +13,7 @@ import Suspects from "@/pages/suspects";
 import Alerts from "@/pages/alerts";
 import Osint from "@/pages/osint";
 import CrimePatterns from "@/pages/crime-patterns";
+import Chat from "@/pages/chat";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ function Router() {
         <Route path="/alerts" component={Alerts} />
         <Route path="/osint" component={Osint} />
         <Route path="/crime-patterns" component={CrimePatterns} />
+        <Route path="/chat" component={Chat} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

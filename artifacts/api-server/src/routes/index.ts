@@ -7,6 +7,7 @@ import suspectsRouter from "./suspects";
 import alertsRouter from "./alerts";
 import osintRouter from "./osint";
 import crimePatternsRouter from "./crime_patterns";
+import chatRouter from "./chat";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(suspectsRouter);
 router.use(alertsRouter);
 router.use(osintRouter);
 router.use(crimePatternsRouter);
+router.use(chatRouter);
 
 export default router;

@@ -256,6 +256,28 @@ export interface CrimePredictions {
   recommendations: string[];
 }
 
+export interface Conversation {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface Message {
+  id: number;
+  conversationId: number;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ConversationInput {
+  title: string;
+}
+
+export interface MessageInput {
+  content: string;
+}
+
 export type ListCasesParams = {
   status?: string;
   priority?: string;

@@ -530,3 +530,49 @@ export const GetCrimePredictionsResponse = zod.object({
   highRiskAreas: zod.array(zod.string()),
   recommendations: zod.array(zod.string()),
 });
+
+/**
+ * @summary List all confidential report chat conversations
+ */
+export const ListConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.string(),
+});
+export const ListConversationsResponse = zod.array(
+  ListConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new confidential report chat conversation
+ */
+export const CreateConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary List all messages inside a conversation thread
+ */
+export const ListMessagesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListMessagesResponseItem = zod.object({
+  id: zod.number(),
+  conversationId: zod.number(),
+  role: zod.string(),
+  content: zod.string(),
+  createdAt: zod.string(),
+});
+export const ListMessagesResponse = zod.array(ListMessagesResponseItem);
+
+/**
+ * @summary Send a message to a conversation thread and trigger bot intake analysis
+ */
+export const SendMessageParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SendMessageBody = zod.object({
+  content: zod.string(),
+});
