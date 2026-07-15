@@ -2,6 +2,7 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "type": "module",
   "packageManager": "pnpm@11.8.0",
   "scripts": {
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
@@ -9,6 +10,9 @@
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "private": true,
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.3"
+  },
   "devDependencies": {
     "typescript": "~5.9.2",
     "prettier": "^3.8.1",

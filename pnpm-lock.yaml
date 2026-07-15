@@ -68,6 +68,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.5.3
+        version: 0.5.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

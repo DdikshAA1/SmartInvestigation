@@ -24,15 +24,38 @@ router.get("/suspects/network", async (req, res): Promise<void> => {
   const edges: { source: number; target: number; relationship: string }[] = [];
   for (const suspect of suspects) {
     if (suspect.knownAssociates) {
+      let resolvedIds: number[] = [];
       try {
-        const associateIds = JSON.parse(suspect.knownAssociates) as number[];
-        for (const associateId of associateIds) {
-          if (suspects.find((s) => s.id === associateId)) {
-            edges.push({ source: suspect.id, target: associateId, relationship: "known-associate" });
+        const parsed = JSON.parse(suspect.knownAssociates);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (typeof item === "number") {
+              resolvedIds.push(item);
+            } else if (typeof item === "string") {
+              const matched = suspects.find(
+                (s) => s.name.toLowerCase() === item.trim().toLowerCase() || s.alias?.toLowerCase() === item.trim().toLowerCase()
+              );
+              if (matched) resolvedIds.push(matched.id);
+            }
           }
         }
       } catch {
-        // ignore invalid JSON
+        // Fallback: parse as comma-separated string of names/aliases
+        const names = suspect.knownAssociates.split(",").map((n) => n.trim()).filter(Boolean);
+        for (const name of names) {
+          const matched = suspects.find(
+            (s) => s.name.toLowerCase() === name.toLowerCase() || s.alias?.toLowerCase() === name.toLowerCase()
+          );
+          if (matched) resolvedIds.push(matched.id);
+        }
+      }
+
+      for (const id of resolvedIds) {
+        if (suspects.some((s) => s.id === id)) {
+          if (!edges.some((e) => e.source === suspect.id && e.target === id)) {
+            edges.push({ source: suspect.id, target: id, relationship: "known-associate" });
+          }
+        }
       }
     }
   }

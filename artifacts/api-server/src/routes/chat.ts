@@ -16,11 +16,14 @@ function getLocalChatbotReply(userMessage: string, messageCount: number): string
     return "Thank you for reaching out to the Confidential Intake Unit. Your conversation is secure and encrypted. Please share details about the incident you want to report, including what occurred and when.";
   }
 
-  if (msg.includes("danger") || msg.includes("kill") || msg.includes("hurt") || msg.includes("safety") || msg.includes("abuse")) {
+  // Sync with evaluateThreatAlert keywords
+  const criticalKeywords = ["kill", "abuse", "violence", "threat", "weapon", "forced", "hurt", "danger", "fight", "assault", "rape", "gun", "knife", "safety"];
+  if (criticalKeywords.some(keyword => msg.includes(keyword))) {
     return "YOUR SAFETY IS CRITICAL. If you are in immediate physical danger, please find a safe space immediately and call emergency hotlines (112 or local police). We have flagged this report for urgent admin priority review. Can you share your current location and if the suspect is still nearby?";
   }
 
-  if (msg.includes("name") || msg.includes("suspect") || msg.includes("identity") || msg.includes("who")) {
+  const suspectKeywords = ["name", "suspect", "identity", "who", "alias", "associate", "profile", "mitnick", "ivanov", "petrova"];
+  if (suspectKeywords.some(keyword => msg.includes(keyword))) {
     return "Understood. The identity details you have provided will be restricted to authorized investigators only. Do you have any supporting documents, screenshots, or physical description of the suspect that we should note?";
   }
 
@@ -104,6 +107,23 @@ router.get("/chat/conversations/:id/messages", async (req, res): Promise<void> =
   }
 
   try {
+    // Check if conversation exists
+    const [conv] = await db.select().from(conversations).where(eq(conversations.id, conversationId));
+    if (!conv) {
+      // Auto-create conversation to support serverless environment shift
+      await db.insert(conversations).values({
+        id: conversationId,
+        title: `Confidential Report #${conversationId}`,
+      });
+      // Add welcome message
+      const welcomeText = "Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure. Please describe the incident you would like to report so we can alert the duty officers privately.";
+      await db.insert(messages).values({
+        conversationId,
+        role: "assistant",
+        content: welcomeText,
+      });
+    }
+
     const list = await db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
     res.json(list.map(m => ({
       ...m,
@@ -130,11 +150,21 @@ router.post("/chat/conversations/:id/messages", async (req, res): Promise<void> 
   const userContent = parsed.data.content;
 
   try {
-    // 1. Fetch conversation details to build alert context
-    const [conv] = await db.select().from(conversations).where(eq(conversations.id, conversationId));
+    // 1. Fetch conversation details or auto-provision if shifted
+    let [conv] = await db.select().from(conversations).where(eq(conversations.id, conversationId));
     if (!conv) {
-      res.status(404).json({ error: "Conversation not found" });
-      return;
+      const [newConv] = await db.insert(conversations).values({
+        id: conversationId,
+        title: `Confidential Report #${conversationId}`,
+      }).returning();
+      conv = newConv;
+
+      const welcomeText = "Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure. Please describe the incident you would like to report so we can alert the duty officers privately.";
+      await db.insert(messages).values({
+        conversationId,
+        role: "assistant",
+        content: welcomeText,
+      });
     }
 
     // 2. Save user message to database

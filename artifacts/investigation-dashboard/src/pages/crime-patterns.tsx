@@ -56,6 +56,13 @@ export default function CrimePatterns() {
         <p className="text-sm text-muted-foreground font-mono mt-1">Pattern analysis, hotspots, and AI-powered predictions</p>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          This page shows trends, charts, and maps of local crimes. The system uses AI to analyze past crime statistics and predict potential high-risk zones and next steps.
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {patternsLoading ? (
           [...Array(5)].map((_, i) => <Skeleton key={i} className="h-20" />)

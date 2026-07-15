@@ -37,6 +37,13 @@ export default function Dashboard() {
         <p className="text-sm text-muted-foreground font-mono mt-1">Real-time operational overview</p>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          This is your main dashboard. It gives you a quick, live overview of all police operations. Here, you can see total cases, active cases, recent crimes, and urgent alerts.
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         {statCards.map((s) => (
           <Card key={s.label} className="bg-card border-border" data-testid={`stat-${s.label.toLowerCase().replace(/\s/g, "-")}`}>

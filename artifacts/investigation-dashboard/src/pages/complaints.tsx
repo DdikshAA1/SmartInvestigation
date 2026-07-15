@@ -111,6 +111,13 @@ export default function Complaints() {
         </Dialog>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          This page holds initial complaints submitted by citizens. You can view each complaint and click "Analyze" to let the AI summarize it and suggest what to do next.
+        </p>
+      </div>
+
       <div className="flex gap-3 flex-wrap">
         <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
           <SelectTrigger className="w-36 font-mono" data-testid="select-urgency-filter"><SelectValue placeholder="Urgency" /></SelectTrigger>

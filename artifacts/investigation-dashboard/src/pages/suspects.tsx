@@ -150,6 +150,13 @@ export default function Suspects() {
         </Dialog>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          This is a list of suspects and persons of interest. You can search suspects, check their risk levels, view their known associates, and see their connections using the network graph.
+        </p>
+      </div>
+
       <Tabs defaultValue="list">
         <TabsList className="bg-card border border-border font-mono">
           <TabsTrigger value="list" className="font-mono text-xs">Suspect List</TabsTrigger>

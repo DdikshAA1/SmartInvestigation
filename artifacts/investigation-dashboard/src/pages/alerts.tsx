@@ -116,6 +116,13 @@ export default function Alerts() {
         </Dialog>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          This page lists live security alerts and threats. When a new threat is detected, it shows up here. You can acknowledge alerts to show you are looking into them, or mark them resolved when fixed.
+        </p>
+      </div>
+
       <div className="flex gap-3 flex-wrap">
         <Select value={severityFilter} onValueChange={setSeverityFilter}>
           <SelectTrigger className="w-36 font-mono" data-testid="select-severity-filter"><SelectValue placeholder="Severity" /></SelectTrigger>

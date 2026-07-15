@@ -59,3 +59,5 @@ pglite-data/
 pglite-data
 *.pid
 
+
+.vercel

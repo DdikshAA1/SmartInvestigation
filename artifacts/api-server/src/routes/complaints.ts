@@ -117,7 +117,7 @@ Return ONLY valid JSON, no markdown, no explanation.`;
   };
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o",
       max_completion_tokens: 512,
       messages: [{ role: "user", content: prompt }],
     });

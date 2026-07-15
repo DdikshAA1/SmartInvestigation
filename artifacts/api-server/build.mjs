@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, readdir, cp } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -15,7 +15,10 @@ async function buildAll() {
   await rm(distDir, { recursive: true, force: true });
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    entryPoints: [
+      path.resolve(artifactDir, "src/index.ts"),
+      path.resolve(artifactDir, "src/app.ts")
+    ],
     platform: "node",
     bundle: true,
     format: "esm",
@@ -100,7 +103,6 @@ async function buildAll() {
       "puppeteer",
       "puppeteer-core",
       "electron",
-      "@electric-sql/pglite",
     ],
     sourcemap: "linked",
     plugins: [
@@ -119,6 +121,18 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  // Copy PGLite WebAssembly and database assets to distDir so Vercel can pack and resolve them at runtime
+  const pgliteDistDir = path.dirname(require.resolve("@electric-sql/pglite"));
+  const files = await readdir(pgliteDistDir);
+  for (const file of files) {
+    if (file.endsWith(".wasm") || file.endsWith(".data") || file.endsWith(".tar.gz")) {
+      await cp(
+        path.join(pgliteDistDir, file),
+        path.join(distDir, file)
+      );
+    }
+  }
 }
 
 buildAll().catch((err) => {

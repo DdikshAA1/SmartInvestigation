@@ -124,6 +124,13 @@ export default function Cases() {
         </Dialog>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          Use this page to track active and closed investigations. You can open a new case, search/filter cases, assign officers, and update case status (e.g. open, active, pending, or closed).
+        </p>
+      </div>
+
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

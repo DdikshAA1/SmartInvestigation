@@ -127,6 +127,13 @@ export default function Osint() {
         )}
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          OSINT (Open Source Intelligence) helps you scan public data from the internet. You can type in a username, website domain, email, phone number, or crypto wallet to find digital footprints, location details, data breaches, and risk assessments.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Scanner Form */}
         <Card className="lg:col-span-4 bg-card border-border border-primary/20 backdrop-blur-md shadow-lg shadow-black/40">

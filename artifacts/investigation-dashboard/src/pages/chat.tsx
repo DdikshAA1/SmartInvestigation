@@ -111,6 +111,13 @@ export default function Chat() {
         </h1>
       </div>
 
+      <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg space-y-1 shrink-0">
+        <h2 className="text-xs font-mono font-bold text-primary uppercase tracking-wider">What is this section for?</h2>
+        <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+          This is a secure, private chat where citizens can report crimes or share anonymous tips. The assistant uses AI to understand the report and will automatically flag urgent threats.
+        </p>
+      </div>
+
       {/* Main Panel grid */}
       <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
         
