@@ -244,13 +244,20 @@ export default function Chat() {
 
               {/* Quick Prompt Shortcuts */}
               <div className="px-3 pt-2 pb-1 bg-muted/10 border-t border-border/50 shrink-0 flex items-center gap-1.5 overflow-x-auto">
-                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider shrink-0 mr-1">Quick Help:</span>
+                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider shrink-0 mr-1">Multilingual Quick Help:</span>
                 <button
                   type="button"
                   onClick={() => setTypedMessage("Mera bank account se paise kat gaye hain, cyber fraud ho gaya hai.")}
                   className="text-[10px] font-mono bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
                 >
-                  💳 Cyber Fraud (1930)
+                  💳 Hinglish Fraud (1930)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTypedMessage("मेरे बैंक खाते से ₹45,000 कट गए हैं, कृपया मदद करें।")}
+                  className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  🇮🇳 हिंदी फ्रॉड (1930)
                 </button>
                 <button
                   type="button"
@@ -261,17 +268,10 @@ export default function Chat() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTypedMessage("Kisi ne social media par fake account/blackmail shuru kiya hai.")}
+                  onClick={() => setTypedMessage("Someone created a fake profile and is blackmailing me on Instagram.")}
                   className="text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
                 >
-                  🛡️ Cyberstalking / Blackmail
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTypedMessage("Mujhe emergency safety ki zaroorat hai, physical threat hai.")}
-                  className="text-[10px] font-mono bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
-                >
-                  🚨 Emergency Safety (112)
+                  🛡️ English Harassment
                 </button>
               </div>
 

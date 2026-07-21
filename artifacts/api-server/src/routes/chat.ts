@@ -83,18 +83,27 @@ function getLocalChatbotReply(userMessage: string, messageCount: number, history
     "gpay", "paytm", "phonepe", "otp", "upi", "card", "mobile", "phone", "stolen"
   ];
   
-  const isHindiScript = /[\u0900-\u097F]/.test(userMessage);
+  // Detect language scripts
+  const isHindiScript = /[\u0900-\u097F]/.test(userMessage); // Devanagari (Hindi, Marathi)
+  const isBengaliScript = /[\u0980-\u09FF]/.test(userMessage); // Bengali
+  const isGurmukhiScript = /[\u0A00-\u0A7F]/.test(userMessage); // Punjabi
+  const isPunjabiScript = isGurmukhiScript;
+  const isGujaratiScript = /[\u0A80-\u0AFF]/.test(userMessage); // Gujarati
+  const isTamilScript = /[\u0B80-\u0BFF]/.test(userMessage); // Tamil
+  const isTeluguScript = /[\u0C00-\u0C7F]/.test(userMessage); // Telugu
+  const isKannadaScript = /[\u0C80-\u0CFF]/.test(userMessage); // Kannada
+  const isMalayalamScript = /[\u0D00-\u0D7F]/.test(userMessage); // Malayalam
+  const isArabicScript = /[\u0600-\u06FF]/.test(userMessage); // Urdu / Arabic
   const isHinglish = HINGLISH_INDICATORS.some(word => msg.includes(word));
-  
+
   // Scenario Keywords
-  const financialKeywords = ["money", "paisa", "paise", "bank", "account", "gpay", "phonepe", "paytm", "upi", "card", "otp", "stolen money", "fraud", "scam", "thagi", "transfer", "utr", "deducted", "luta", "credit", "debit"];
+  const financialKeywords = ["money", "paisa", "paise", "taka", "hona", "rupees", "bank", "account", "gpay", "phonepe", "paytm", "upi", "card", "otp", "stolen money", "fraud", "scam", "thagi", "transfer", "utr", "deducted", "luta", "credit", "debit"];
   const stalkingKeywords = ["stalk", "harass", "blackmail", "photo", "video", "morph", "fake profile", "instagram", "whatsapp", "telegram", "threaten", "dhamki", "gali", "private", "nude", "leak"];
   const phoneTheftKeywords = ["phone", "mobile", "imei", "stolen phone", "chori phone", "lost phone", "sim", "device", "handset"];
   const criticalKeywords = ["kill", "abuse", "violence", "threat", "weapon", "forced", "hurt", "danger", "fight", "assault", "rape", "gun", "knife", "safety", "emergency", "blood", "attack", "suicide"];
   const suspectKeywords = ["name", "suspect", "identity", "who", "alias", "associate", "profile", "mitnick", "ivanov", "petrova", "person", "look like"];
   const evidenceKeywords = ["file", "photo", "image", "proof", "screenshot", "video", "document", "record", "receipt", "chat log"];
-  const locationKeywords = ["where", "location", "address", "city", "place", "street", "house", "near"];
-  const greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "namaste"];
+  const greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "namaste", "pranam", "vanakkam", "namaskaram", "sat sri akal", "khemcho"];
 
   const hasGreeting = greetings.some(word => msg.includes(word));
   const isFinancial = financialKeywords.some(word => msg.includes(word));
@@ -104,17 +113,16 @@ function getLocalChatbotReply(userMessage: string, messageCount: number, history
   const hasSuspect = suspectKeywords.some(word => msg.includes(word));
   const hasEvidence = evidenceKeywords.some(word => msg.includes(word));
 
-  const randomOf = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-
-  // 1. GREETING/WELCOME STAGE
+  // 1. GREETING STAGE
   if (messageCount === 0 && hasGreeting) {
-    if (isHindiScript) {
-      return "नमस्ते। यह गोपनीय पुलिस सहायता और रिपोर्टिंग सेल है। आपकी बातचीत पूरी तरह से सुरक्षित और एन्क्रिप्टेड है। कृपया मुझे अपनी समस्या बताएं - जैसे वित्तीय धोखाधड़ी, ब्लैकमेल, खोया हुआ फोन, या सुरक्षा खतरा। मैं आपकी पूरी मदद करूंगा।";
-    }
-    if (isHinglish) {
-      return "Namaste! Main Vanguard Cyber Help & Secure Intake Assistant hoon. Aapki baat bilkul safe aur encrypted hai. Bataiye kya problem hui hai - paise ki thagi, online harassment, lost phone, ya koi aur threat? Main aapki step-by-step help karunga.";
-    }
-    return "Hello! I am your Vanguard Cyber Assistance & Secure Intake Officer. Your conversation is encrypted and 100% confidential. Please tell me what issue you are facing - financial scam, cyber harassment, lost phone, or a safety threat? I am here to assist you step-by-step.";
+    if (isBengaliScript) return "নমস্কার। এটি একটি সুরক্ষিত সাইবার সাহায্য সেল। আপনার তথ্য সম্পূর্ণ গোপন রাখা হবে। সাইবার জালিয়াতি, ফোন চুরি বা ব্ল্যাকমেইলের ঘটনা জানান।";
+    if (isTamilScript) return "வணக்கம்! இது பாதுகாப்பான சைபர் உதவி மையம். உங்கள் தகவல் முற்றிலும் பாதுகாப்பானது. உங்கள் புகாரை விவரிக்கவும்.";
+    if (isTeluguScript) return "నమస్కారం! ఇది సురక్షితమైన సైబర్ సాయం కేంద్రం. మీ సమాచారం పూర్తిగా గోప్యంగా ఉంటుంది. మీ సమస్యను వివరించండి.";
+    if (isPunjabiScript) return "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ। ਇਹ ਸੁਰੱਖਿਅਤ ਸਾਈਬਰ ਹੈਲਪ ਡੈਸਕ ਹੈ। ਆਪਣੀ ਸਮੱਸਿਆ (ਸਾਈਬਰ ਫ੍ਰਾਡ, ਮੋਬਾਈਲ ਚੋਰੀ) ਬਾਰੇ ਦੱਸੋ।";
+    if (isGujaratiScript) return "નમસ્તે! આ સુરક્ષિત સાયબર હેલ્પ સેલ છે. તમારી સમસ્યા વિગતવાર જણાવો.";
+    if (isHindiScript) return "नमस्ते। यह गोपनीय पुलिस सहायता और रिपोर्टिंग सेल है। आपकी बातचीत पूरी तरह से सुरक्षित है। कृपया अपनी समस्या बताएं (वित्तीय धोखाधड़ी, ब्लैकमेल, खोया फोन)।";
+    if (isHinglish) return "Namaste! Main Vanguard Cyber Help Assistant hoon. Aapki baat encrypted hai. Bataiye kya problem hui hai - paise ki thagi, harassment, lost phone ya koi threat?";
+    return "Hello! I am your Vanguard Cyber Assistance Officer. Your conversation is 100% confidential and encrypted. Please describe your issue (cyber fraud, harassment, lost phone, or threat).";
   }
 
   // 2. CRITICAL / EMERGENCY WARNINGS
@@ -375,19 +383,32 @@ To view this full secure thread, please check the Vanguard Admin Dashboard.
       const messagesPrompt = [
         {
           role: "system" as const,
-          content: `You are Vanguard AI Cyber & Crime Assistant, an expert, highly empathetic, and accurate Police Intake Officer.
-Your objective is to give ACTUAL, REAL-WORLD STEP-BY-STEP HELP to citizens reporting cyber frauds, harassment, stolen devices, threats, or crimes.
+          content: `You are Vanguard AI Cyber & Crime Assistant, an expert, highly empathetic, NLP-driven Police & Cyber Intake Officer.
+You are trained to accept ANY language in the world (English, Hinglish, Hindi, Marathi, Bengali, Tamil, Telugu, Gujarati, Punjabi, Kannada, Malayalam, Urdu, Spanish, French, German, Arabic, etc.) and seamlessly converse in that exact same language.
 
-CRITICAL ASSISTANCE DIRECTIVES:
-1. DIALECT & LANGUAGE MATCHING: Speak in the EXACT same language/dialect as the user (English, Hinglish, or Hindi Devanagari script).
-2. DEEP FACT ANALYSIS: Acknowledge exact details mentioned by the user (amount stolen, date/time, app/platform used, suspect handles) so the user knows you truly understand their situation.
-3. IMMEDIATE ACTION CHECKLIST:
-   - Financial Fraud / Scams / OTP Theft: Give priority steps: 1) Call National Cyber Helpline 1930 immediately to freeze funds (Golden Hour), 2) Lodge complaint at cybercrime.gov.in, 3) Block bank cards/UPI ID.
-   - Cyberstalking / Blackmail / Leaked Media: Advise 1) Do NOT pay money, 2) Save screenshots of chat/profile URL with timestamps, 3) Report on portal cybercrime.gov.in under Women/Child Safety or Call 1091 / 112.
-   - Stolen/Lost Phone: Advise 1) Block IMEI on Govt CEIR portal (ceir.gov.in), 2) Block SIM with operator, 3) File Lost Property Report / GD at local police.
-   - Physical Danger / Threat: Advise 1) Seek immediate safety, 2) Dial Emergency 112 or Police 100.
-4. GENTLE INTAKE QUESTIONS: Ask for 1 or 2 key missing pieces of evidence (Transaction UTR/Ref ID, Suspect Handle/Number, Date/Time, Screenshots) needed for official investigation.
-5. CONCISE & EMPATHETIC: Be supportive, reassuring, and structured (2-4 sentences or clear bullet points).`
+STRICT MULTI-LINGUAL & NLP DIRECTIVES:
+1. MANDATORY LANGUAGE & SCRIPT MIRRORING:
+   - Automatically detect the language, script, and dialect of the user's message.
+   - You MUST reply in the EXACT SAME LANGUAGE and SCRIPT/DIALECT as the user's input.
+   - If the user writes in Devanagari Hindi, reply in Devanagari Hindi.
+   - If the user writes in Hinglish (Romanized Hindi), reply in Hinglish.
+   - If the user writes in Marathi, Tamil, Bengali, Punjabi, Gujarati, Urdu, Spanish, etc., reply in that exact language.
+   - NEVER default back to English unless the user explicitly asked in English.
+
+2. NLP DEEP ENTITY & INTENT EXTRACTION:
+   - Understand the user's intent (Financial Cyber Fraud, Cyberstalking/Blackmail, Phone Theft, Emergency Threat, Scam).
+   - Extract key facts (amount of money lost, bank name, transaction ID, date/time, suspect username/number, location) and acknowledge them in the user's language so they feel heard.
+
+3. ACCURATE STEP-BY-STEP HELP IN THE USER'S LANGUAGE:
+   - Financial Cyber Fraud (Bank/UPI/OTP scam): Tell them to immediately call National Cyber Helpline 1930 (Golden Hour window to freeze funds), register on cybercrime.gov.in, and block bank cards/UPI.
+   - Cyberstalking / Blackmail: Tell them NOT to pay money, save screenshots of chat/profile link, block suspect, and file at cybercrime.gov.in or call Women Helpline 1091 / Emergency 112.
+   - Lost/Stolen Mobile: Guide them to block IMEI on Govt CEIR portal (ceir.gov.in), block SIM card, and file Lost Property Report.
+   - Physical Danger / Threat: Guide them to seek safe shelter immediately and call National Emergency 112 or Police 100.
+
+4. DYNAMIC & NATURAL DIALOGUE:
+   - Do NOT use mechanical or repetitive templates.
+   - Ask 1 or 2 specific follow-up questions for missing details (such as Transaction UTR, Suspect Handle, or Screenshots).
+   - Keep answers concise (2-4 sentences or clear bullet points) and deeply empathetic.`
         },
         ...history.map(m => ({
           role: m.role as "user" | "assistant" | "system",
