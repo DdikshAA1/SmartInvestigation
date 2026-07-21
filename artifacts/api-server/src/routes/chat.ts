@@ -74,132 +74,125 @@ async function sendEmailNotification(subject: string, text: string) {
 function getLocalChatbotReply(userMessage: string, messageCount: number, history: any[]): string {
   const msg = userMessage.toLowerCase();
 
-  // Detect language and dialect (Hindi, Hinglish, English)
+  // Detect language script / dialect
   const HINGLISH_INDICATORS = [
     "bhai", "hai", "mujhe", "kuch", "mai", "mera", "hu", "tha", "ko", "se", "kar", 
     "naam", "hum", "police", "madad", "help", "cyber", "paisa", "chori", "bank", 
     "account", "phish", "darr", "dhamki", "mara", "gali", "paise", "nikal", "link", 
-    "kho", "khoya", "dhokha", "thagi", "kya", "kaise", "kab", "kaha"
+    "kho", "khoya", "dhokha", "thagi", "kya", "kaise", "kab", "kaha", "luta", "fraud",
+    "gpay", "paytm", "phonepe", "otp", "upi", "card", "mobile", "phone", "stolen"
   ];
   
   const isHindiScript = /[\u0900-\u097F]/.test(userMessage);
   const isHinglish = HINGLISH_INDICATORS.some(word => msg.includes(word));
   
-  const criticalKeywords = ["kill", "abuse", "violence", "threat", "weapon", "forced", "hurt", "danger", "fight", "assault", "rape", "gun", "knife", "safety", "emergency", "blood", "attack"];
+  // Scenario Keywords
+  const financialKeywords = ["money", "paisa", "paise", "bank", "account", "gpay", "phonepe", "paytm", "upi", "card", "otp", "stolen money", "fraud", "scam", "thagi", "transfer", "utr", "deducted", "luta", "credit", "debit"];
+  const stalkingKeywords = ["stalk", "harass", "blackmail", "photo", "video", "morph", "fake profile", "instagram", "whatsapp", "telegram", "threaten", "dhamki", "gali", "private", "nude", "leak"];
+  const phoneTheftKeywords = ["phone", "mobile", "imei", "stolen phone", "chori phone", "lost phone", "sim", "device", "handset"];
+  const criticalKeywords = ["kill", "abuse", "violence", "threat", "weapon", "forced", "hurt", "danger", "fight", "assault", "rape", "gun", "knife", "safety", "emergency", "blood", "attack", "suicide"];
   const suspectKeywords = ["name", "suspect", "identity", "who", "alias", "associate", "profile", "mitnick", "ivanov", "petrova", "person", "look like"];
   const evidenceKeywords = ["file", "photo", "image", "proof", "screenshot", "video", "document", "record", "receipt", "chat log"];
   const locationKeywords = ["where", "location", "address", "city", "place", "street", "house", "near"];
-  const greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon"];
+  const greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "namaste"];
 
   const hasGreeting = greetings.some(word => msg.includes(word));
+  const isFinancial = financialKeywords.some(word => msg.includes(word));
+  const isStalking = stalkingKeywords.some(word => msg.includes(word));
+  const isPhoneTheft = phoneTheftKeywords.some(word => msg.includes(word));
   const isCritical = criticalKeywords.some(word => msg.includes(word));
   const hasSuspect = suspectKeywords.some(word => msg.includes(word));
   const hasEvidence = evidenceKeywords.some(word => msg.includes(word));
-  const hasLocation = locationKeywords.some(word => msg.includes(word));
 
   const randomOf = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
   // 1. GREETING/WELCOME STAGE
   if (messageCount === 0 && hasGreeting) {
     if (isHindiScript) {
-      return "नमस्ते। यह गोपनीय रिपोर्टिंग प्रणाली है। आपका कनेक्शन पूरी तरह से सुरक्षित है। कृपया घटना का विवरण साझा करें, जैसे कि क्या और कब हुआ था।";
+      return "नमस्ते। यह गोपनीय पुलिस सहायता और रिपोर्टिंग सेल है। आपकी बातचीत पूरी तरह से सुरक्षित और एन्क्रिप्टेड है। कृपया मुझे अपनी समस्या बताएं - जैसे वित्तीय धोखाधड़ी, ब्लैकमेल, खोया हुआ फोन, या सुरक्षा खतरा। मैं आपकी पूरी मदद करूंगा।";
     }
     if (isHinglish) {
-      return "Namaste. Ye confidential intake unit hai. Aapka connection fully encrypted aur safe hai. Please incident ki details share karein, jaise kab aur kya hua tha.";
+      return "Namaste! Main Vanguard Cyber Help & Secure Intake Assistant hoon. Aapki baat bilkul safe aur encrypted hai. Bataiye kya problem hui hai - paise ki thagi, online harassment, lost phone, ya koi aur threat? Main aapki step-by-step help karunga.";
     }
-    return "Hello. This is the Secure Intake Unit. Your connection is fully encrypted. Please describe the incident you would like to report, including any details you remember.";
+    return "Hello! I am your Vanguard Cyber Assistance & Secure Intake Officer. Your conversation is encrypted and 100% confidential. Please tell me what issue you are facing - financial scam, cyber harassment, lost phone, or a safety threat? I am here to assist you step-by-step.";
   }
 
-  // 2. CRITICAL / EMERGENCY WARNINGS & REAL HELPFUL NUMBERS
+  // 2. CRITICAL / EMERGENCY WARNINGS
   if (isCritical) {
     if (isHindiScript) {
-      return "आपकी सुरक्षा सबसे महत्वपूर्ण है। यदि आप तत्काल खतरे में हैं, तो कृपया तुरंत किसी सुरक्षित स्थान पर जाएं और आपातकालीन हॉटलाइन (112 या स्थानीय पुलिस) पर कॉल करें। यदि यह ऑनलाइन वित्तीय धोखाधड़ी है, तो तत्काल वित्तीय लेनदेन को फ्रीज करने के लिए तुरंत 1930 पर कॉल करें। हमने इस रिपोर्ट को अत्यंत महत्वपूर्ण चिह्नित किया है। क्या आप अपनी वर्तमान स्थिति साझा कर सकते हैं?";
+      return "🚨 आपकी सुरक्षा हमारी सर्वोच्च प्राथमिकता है!\n1. यदि आप किसी तात्कालिक खतरे में हैं, तो तुरंत सुरक्षित स्थान पर जाएं और आपातकालीन नंबर 112 या 100 पर कॉल करें।\n2. यदि महिला सुरक्षा से जुड़ा मामला है, तो 1091 पर संपर्क करें।\n3. हमने आपकी रिपोर्ट को 'CRITICAL' के रूप में पुलिस कंट्रोल रूम को सूचित कर दिया है। क्या आप अपना वर्तमान स्थान (Location) साझा कर सकते हैं?";
     }
     if (isHinglish) {
-      return "AAPKI SAFETY SABSE PEHLE HAI. Agar aap active danger me hain toh please turant safe jagah par jayein aur police helpline 112 par call karein. Agar ye online financial fraud (paise ki thagi) hai, toh turant 1930 call karein taaki transactions freeze ho sakein. Humne is report ko critical priority par mark kiya hai. Kya aap apni location share kar sakte hain?";
+      return "🚨 AAPKI SAFETY SABSE PEHLE HAI!\n1. Agar aap immediate physical danger me hain, toh turant safe place par jayein aur National Emergency 112 ya 100 par call karein.\n2. Women harassment ke liye 1091 par bhi call kar sakte hain.\n3. Humne ye report CRITICAL priority par mark karke supervisor alert kar diya hai. Kya aap apni location share kar sakte hain?";
     }
-    return "YOUR IMMEDIATE SAFETY IS MOST IMPORTANT. If you are in active danger, please go to a safe location right away and call emergency hotlines (112 or local police). If this is an active financial cyber fraud, call 1930 immediately to freeze transactions. We have flagged this report as a CRITICAL case. Can you share where you are right now?";
+    return "🚨 YOUR SAFETY IS OUR TOP PRIORITY!\n1. If you are in immediate danger, move to a safe place and call National Emergency 112 or Police 100 immediately.\n2. For Women Safety emergencies, call 1091.\n3. We have flagged this report as CRITICAL and alerted duty officers. Can you please share your current location and if the threat is nearby?";
   }
 
-  // 3. SUSPECT SPECIFICS
+  // 3. FINANCIAL SCAM / BANKING FRAUD / OTP SCAM
+  if (isFinancial) {
+    if (isHindiScript) {
+      return "💳 वित्तीय धोखाधड़ी (Cyber Fraud) सहायता निर्देश:\n1. तुरंत 'गोल्डन आवर' में राष्ट्रीय साइबर हेल्पलाइन 1930 पर कॉल करें ताकि आपका पैसा बैंक में ही ब्लॉक किया जा सके।\n2. अधिकारिक पोर्टल cybercrime.gov.in पर शिकायत दर्ज करें।\n3. तुरंत अपने बैंक को सूचित करके अपना डेबिट/क्रेडिट कार्ड और यूपीआई पिन ब्लॉक करवाएं।\n4. कृपया हमें बताएं: कितना पैसा कटा? बैंक का नाम? और धोखाधड़ी की तारीख/समय क्या है?";
+    }
+    if (isHinglish) {
+      return "💳 FINANCIAL CYBER FRAUD ACTION PLAN:\n1. Turant National Cyber Helpline 1930 par call karein taaki fraud money freeze ho sake ('Golden Hour').\n2. Official portal cybercrime.gov.in par complaint register karein.\n3. Apne bank ko call karke Card, Netbanking aur UPI PIN तुरंत block karayein.\n4. Kripya humein batayein: Kitne paise kataye gaye, Bank ka naam, aur Transaction ID / UTR number kya hai?";
+    }
+    return "💳 FINANCIAL CYBER FRAUD ACTION PLAN:\n1. Immediately call the National Cyber Helpline at 1930 to freeze the stolen funds during the Golden Hour window.\n2. Lodge an official report at cybercrime.gov.in.\n3. Contact your bank immediately to block your UPI ID, Net Banking, and Cards.\n4. Please provide: Total amount lost, Bank name, Transaction UTR/Ref ID, and date/time of fraud.";
+  }
+
+  // 4. CYBERSTALKING / BLACKMAIL / HARASSMENT
+  if (isStalking) {
+    if (isHindiScript) {
+      return "🛡️ साइबर ब्लैकमेल / उत्पीड़न सुरक्षा निर्देश:\n1. किसी भी ब्लैकमेलर को कोई पैसा न दें। पैसा देने से ब्लैकमेलिंग कभी बंद नहीं होती।\n2. ब्लैकमेलर के मैसेज, चैट, प्रोफाइल लिंक और फोन नंबर के स्क्रीनशॉट सुरक्षित रखें।\n3. ब्लैकमेलर को ब्लॉक करें और ऐप (WhatsApp/Instagram) पर रिपोर्ट करें।\n4. cybercrime.gov.in पर महिला एवं बाल सुरक्षा अनुभाग में गोपनीय शिकायत दर्ज करें या 1091 पर कॉल करें। क्या आपके पास आरोपी का यूजरनेम या नंबर है?";
+    }
+    if (isHinglish) {
+      return "🛡️ CYBER BLACKMAIL / HARASSMENT GUIDE:\n1. Blackmailer ko BILKUL PAISA MAT DEIN. Money dene se blackmailing rukti nahi hai.\n2. Chat, profile URL, phone number aur messages ke screenshots le kar safe rakh lein.\n3. Profile ko block aur report karein.\n4. cybercrime.gov.in par 'Women/Child Related Crime' section me anonymous complaint file karein ya 1091 par call karein. Kya aapke paas suspect ka handle/number hai?";
+    }
+    return "🛡️ CYBER BLACKMAIL & HARASSMENT ADVISORY:\n1. DO NOT PAY ANY MONEY to the extortionist. Paying money will only invite further threats.\n2. Preserve evidence: Take clear screenshots of messages, profile links, handles, and phone numbers with timestamps.\n3. Block and report the accounts on WhatsApp / Instagram / Telegram.\n4. Lodge a report at cybercrime.gov.in under the Anonymous/Women Safety section, or call 1091. Do you have the suspect's username or phone number?";
+  }
+
+  // 5. STOLEN / LOST MOBILE PHONE
+  if (isPhoneTheft) {
+    if (isHindiScript) {
+      return "📱 खोया / चोरी हुआ मोबाइल फोन ब्लॉक और ट्रैक करने की प्रक्रिया:\n1. दूरसंचार विभाग के पोर्टल CEIR (ceir.gov.in) पर जाएं और अपना IMEI नंबर ब्लॉक करें। इससे चोर फोन का उपयोग नहीं कर पाएगा।\n2. सिम कार्ड ब्लॉक करने के लिए तुरंत अपने टेलीकॉम ऑपरेटर (Jio/Airtel/Vi) से संपर्क करें।\n3. नजदीकी पुलिस स्टेशन या ई-एफआईआर पोर्टल पर खोई हुई संपत्ति की रिपोर्ट दर्ज करें।\n4. क्या आपके पास अपना 15 अंकों का IMEI नंबर उपलब्ध है?";
+    }
+    if (isHinglish) {
+      return "📱 LOST / STOLEN PHONE ACTION STEPS:\n1. Government portal CEIR (ceir.gov.in) par jaakar apna IMEI block & track karein. Isse mobile network par chalna band ho jayega.\n2. Apne telecom operator (Jio/Airtel/Vi) ko call karke SIM block karayein taaki OTP misuse na ho.\n3. Local Police station ya state police app par Lost Property Report / GD file karein.\n4. Kya aapke paas handset ka 15-digit IMEI number aur bill hai?";
+    }
+    return "📱 LOST OR STOLEN MOBILE GUIDE:\n1. Visit the Govt CEIR Portal (ceir.gov.in) to block & trace your handset's 15-digit IMEI number.\n2. Contact your telecom operator (Jio / Airtel / Vi) immediately to block the SIM card to prevent OTP theft.\n3. File a Lost Property Report / e-FIR with the local police.\n4. Do you have the 15-digit IMEI number or purchase invoice available?";
+  }
+
+  // 6. SUSPECT SPECIFICS
   if (hasSuspect) {
     if (isHindiScript) {
-      return "संदेही की जानकारी अत्यंत गोपनीय रखी जाएगी। क्या आपके पास संदेही का कोई विवरण, उपयोगकर्ता नाम (username) या संपर्क जानकारी (फ़ोन/ईमेल) है? इससे हमारी टीम को जांच में सहायता मिलेगी।";
+      return "संदेही की जानकारी अत्यंत गोपनीय रखी जाएगी। क्या आपके पास संदेही का कोई विवरण, उपयोगकर्ता नाम (username), फोन नंबर, या प्रोफाइल लिंक है? इससे साइबर सेल को जांच में सहायता मिलेगी।";
     }
     if (isHinglish) {
-      return "Suspect ki details confidential rakhi jayengi. Kya aapke paas suspect ka physical appearance, username, ya contact number/email hai? Isse cyber cell ko unhe trace karne me madad melega.";
+      return "Suspect ki details confidential rakhi jayengi. Kya aapke paas suspect ka physical appearance, username, social profile URL ya phone number/email hai? Isse cyber cell unhe trace karega.";
     }
-    return "Understood. Suspect details are strictly confidential. Do you have a physical description, username, alias, or contact information (phone/email) we should document? This helps our cyber cells track them down.";
+    return "Understood. Suspect details are strictly confidential. Do you have a physical description, username, social media URL, or contact information (phone/email) we should document? This helps our cyber cells track them down.";
   }
 
-  // 4. EVIDENCE INSTRUCTIONS
+  // 7. EVIDENCE INSTRUCTIONS
   if (hasEvidence) {
     if (isHindiScript) {
       return "साक्ष्य अत्यंत महत्वपूर्ण हैं। कृपया सभी स्क्रीनशॉट, चैट लॉग, लिंक या रसीदें सुरक्षित रखें। उन्हें हटाए नहीं। जांच अधिकारी आपसे ये सुरक्षित तरीके से एकत्र करेंगे। आप cybercrime.gov.in पर भी शिकायत दर्ज कर सकते हैं।";
     }
     if (isHinglish) {
-      return "Screenshots, chat logs aur receipts bohot zaroori saboot hote hain. Please inko delete mat karein aur safe rakhein. Aap cybercrime.gov.in par bhi ise darj kar sakte hain.";
+      return "Screenshots, chat logs aur receipts bohot zaroori saboot hote hain. Please inko delete mat karein aur safe rakhein. Cyber cell investigation me inki zaroorat padegi.";
     }
     return "Evidence is vital. Please save all screenshots, chat logs, links, or receipts. Do not delete them. Our investigation team will request them securely once assigned. You can also file details at cybercrime.gov.in.";
   }
 
-  // 5. GEOGRAPHIC LOCATION
-  if (hasLocation) {
-    if (isHindiScript) {
-      return "स्थान की जानकारी दर्ज कर ली गई है। इससे स्थानीय पुलिस टीम को मदद मिलती है। क्या उस स्थान पर कोई सुरक्षा कैमरे (CCTV) उपलब्ध थे, या यह अपराध पूरी तरह से ऑनलाइन हुआ था?";
-    }
-    if (isHinglish) {
-      return "Location note kar li gayi hai. Isse local teams ko cyber cell intelligence map karne me madad milti hai. Kya wahan aas-paas koi CCTV camera tha, ya ye incident online hua?";
-    }
-    return "Thank you for sharing the location. This helps our geographic intelligence mapping. Do you know if there are security cameras (CCTV) at this location, or was the crime entirely online?";
-  }
-
-  // 6. GENERAL FOLLOWUPS / RANDOM EMOTIONAL INTELLIGENCE
+  // 8. GENERAL HELPFUL ADVISORY
   if (isHindiScript) {
-    const hindiFollowups = [
-      "मैं यह जानकारी दर्ज कर रहा हूँ। कृपया मुझे और विवरण बताएं कि इसके बाद क्या हुआ। वित्तीय धोखाधड़ी के लिए तुरंत 1930 पर कॉल करें।",
-      "विवरण दर्ज कर लिया गया है। एक जांच अधिकारी इसकी समीक्षा कर रहा है। कृपया कोई अन्य तथ्य साझा करें जो आप महत्वपूर्ण महसूस करते हैं।",
-      "धन्यवाद। यदि आप चाहते हैं कि हमारी टीम आपसे संपर्क करे, तो आप एक सुरक्षित ईमेल या फोन नंबर साझा कर सकते हैं।"
-    ];
-    return randomOf(hindiFollowups);
+    return "धन्यवाद। आपकी रिपोर्ट दर्ज कर ली गई है। यदि आप तुरंत सहायता चाहते हैं: साइबर अपराध के लिए 1930, आपातकाल के लिए 112, और आधिकारिक शिकायत दर्ज करने के लिए cybercrime.gov.in का उपयोग करें। क्या आप कुछ और विवरण जोड़ना चाहते हैं?";
   }
   
   if (isHinglish) {
-    const hinglishFollowups = [
-      "Main ye details note kar raha hoon. Aage kya hua? Aur agar paise ki thagi (cyber fraud) hui hai toh turant 1930 call karein.",
-      "Humne details note kar li hain. Ek officer is thread ko review kar raha hai. Safe contact email ya phone number share karein agar aap contact chahte hain, ya anonymous rahein.",
-      "Got it. Please incident se judi koi bhi anjaan link ya OTP share na karein, aur screenshots safe rakhein."
-    ];
-    return randomOf(hinglishFollowups);
+    return "Thank you. Humne aapke details note kar liye hain. Instant help ke liye: Cyber Fraud helpline 1930, Emergency 112, aur official portal cybercrime.gov.in ka use karein. Kya aap kuch aur specific detail add karna chahte hain?";
   }
 
-  const openings = [
-    "I understand this is a difficult situation, and I am here to help.",
-    "Thank you for sharing this. Your safety and confidentiality are our top priorities.",
-    "I appreciate you bringing this forward. Let's look into this step by step.",
-    "We take this report very seriously. Thank you for reporting this securely.",
-    "I hear you. Let me guide you through the process of recording this detail."
-  ];
-
-  const generalFollowups = [
-    "Thank you. Please tell me more about what happened next. If this is a financial cyber fraud, please call 1930 immediately.",
-    "I am capturing these details. What other details, times, or dates can you share? Remember you can file official complaints at cybercrime.gov.in.",
-    "Understood. If you wish to be contacted by our team, you can share a safe email or phone number. Otherwise, your report remains completely anonymous.",
-    "Details logged. An investigator is reviewing this intake thread. Please share any other facts that you feel are important.",
-    "Thank you for providing this context. Is there anyone else who witnessed or was affected by this incident?"
-  ];
-
-  let reply = randomOf(generalFollowups);
-  const assistantHistory = history.filter(h => h.role === "assistant").map(h => h.content);
-  for (let i = 0; i < 5; i++) {
-    if (!assistantHistory.includes(reply)) {
-      break;
-    }
-    reply = randomOf(generalFollowups);
-  }
-
-  const opening = randomOf(openings);
-  return `${opening} ${reply}`;
+  return "Thank you for reporting. Your information has been securely logged. For immediate helpline assistance: Cyber Financial Fraud call 1930, Emergency Safety call 112, or register at cybercrime.gov.in. Would you like to share any additional details or transaction reference numbers?";
 }
 
 // ==========================================
@@ -382,21 +375,19 @@ To view this full secure thread, please check the Vanguard Admin Dashboard.
       const messagesPrompt = [
         {
           role: "system" as const,
-          content: `You are Vanguard Secure Intake Assistant, a highly supportive, empathetic, and professional AI virtual assistant for a Crime Investigation Department.
-A citizen is reporting a crime or sharing a tip in absolute confidence.
+          content: `You are Vanguard AI Cyber & Crime Assistant, an expert, highly empathetic, and accurate Police Intake Officer.
+Your objective is to give ACTUAL, REAL-WORLD STEP-BY-STEP HELP to citizens reporting cyber frauds, harassment, stolen devices, threats, or crimes.
 
-INSTRUCTIONS:
-1. LANGUAGE IDENTIFICATION & ALIGNMENT: You MUST speak in the exact same language or dialect that the user is using (e.g. if the user uses Hinglish, reply in Hinglish; if Hindi script, reply in Hindi script; if English, reply in English).
-2. ACTUAL HELP & GUIDELINES: Provide real, practical assistance. If it is online financial cyber fraud, direct them to immediately call 1930 or visit cybercrime.gov.in. If it is personal safety threat or harassment, direct them to emergency hotlines (112 or local police).
-3. UNDERSTAND CONTEXT DEEPNESS: Carefully analyze the emotional tone, severity, and specific details of every sentence the user sends. Show genuine care and reassure them that this channel is fully encrypted, secure, and private.
-4. DYNAMIC & NATURAL CONVERSATION: Never repeat static phrases or respond mechanically. Keep the tone human-like, comforting, and direct. Do not paste generic replies.
-5. INTEL GATHERING: Gently ask follow-up questions to gather:
-   - Nature of the incident (what occurred)
-   - Date, time, and location
-   - Suspect descriptions, aliases, or contact handles
-   - Available evidence (such as screenshots, chats, documents)
-   - A safe contact method (if they want to be reached, otherwise reassure anonymity)
-6. CONCISE & TARGETED: Keep replies concise (2-4 sentences max), comforting, and professional.`
+CRITICAL ASSISTANCE DIRECTIVES:
+1. DIALECT & LANGUAGE MATCHING: Speak in the EXACT same language/dialect as the user (English, Hinglish, or Hindi Devanagari script).
+2. DEEP FACT ANALYSIS: Acknowledge exact details mentioned by the user (amount stolen, date/time, app/platform used, suspect handles) so the user knows you truly understand their situation.
+3. IMMEDIATE ACTION CHECKLIST:
+   - Financial Fraud / Scams / OTP Theft: Give priority steps: 1) Call National Cyber Helpline 1930 immediately to freeze funds (Golden Hour), 2) Lodge complaint at cybercrime.gov.in, 3) Block bank cards/UPI ID.
+   - Cyberstalking / Blackmail / Leaked Media: Advise 1) Do NOT pay money, 2) Save screenshots of chat/profile URL with timestamps, 3) Report on portal cybercrime.gov.in under Women/Child Safety or Call 1091 / 112.
+   - Stolen/Lost Phone: Advise 1) Block IMEI on Govt CEIR portal (ceir.gov.in), 2) Block SIM with operator, 3) File Lost Property Report / GD at local police.
+   - Physical Danger / Threat: Advise 1) Seek immediate safety, 2) Dial Emergency 112 or Police 100.
+4. GENTLE INTAKE QUESTIONS: Ask for 1 or 2 key missing pieces of evidence (Transaction UTR/Ref ID, Suspect Handle/Number, Date/Time, Screenshots) needed for official investigation.
+5. CONCISE & EMPATHETIC: Be supportive, reassuring, and structured (2-4 sentences or clear bullet points).`
         },
         ...history.map(m => ({
           role: m.role as "user" | "assistant" | "system",

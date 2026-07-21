@@ -242,6 +242,39 @@ export default function Chat() {
                 <div ref={messagesEndRef} />
               </CardContent>
 
+              {/* Quick Prompt Shortcuts */}
+              <div className="px-3 pt-2 pb-1 bg-muted/10 border-t border-border/50 shrink-0 flex items-center gap-1.5 overflow-x-auto">
+                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider shrink-0 mr-1">Quick Help:</span>
+                <button
+                  type="button"
+                  onClick={() => setTypedMessage("Mera bank account se paise kat gaye hain, cyber fraud ho gaya hai.")}
+                  className="text-[10px] font-mono bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  💳 Cyber Fraud (1930)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTypedMessage("Mera mobile phone lost/chori ho gaya hai. IMEI block kaise karein?")}
+                  className="text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  📱 Stolen Phone (CEIR)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTypedMessage("Kisi ne social media par fake account/blackmail shuru kiya hai.")}
+                  className="text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  🛡️ Cyberstalking / Blackmail
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTypedMessage("Mujhe emergency safety ki zaroorat hai, physical threat hai.")}
+                  className="text-[10px] font-mono bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  🚨 Emergency Safety (112)
+                </button>
+              </div>
+
               {/* Message Ingestion Form */}
               <div className="p-3 border-t border-border bg-muted/20 shrink-0">
                 <div className="flex items-center gap-2">
@@ -249,7 +282,7 @@ export default function Chat() {
                     value={typedMessage}
                     onChange={(e) => setTypedMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                    placeholder="Describe sensitive threat details (violence, location, identities)..."
+                    placeholder="Describe your issue (fraud, theft, harassment, location, evidence)..."
                     className="font-mono text-xs bg-background border-border h-10 flex-grow placeholder-muted-foreground/60"
                   />
                   <Button size="icon" onClick={handleSendMessage} disabled={!typedMessage.trim() || sendMessage.isPending} className="h-10 w-10 shrink-0 bg-red-600 hover:bg-red-700 text-white">
@@ -257,7 +290,7 @@ export default function Chat() {
                   </Button>
                 </div>
                 <p className="text-[9px] font-mono text-muted-foreground/50 text-center mt-2 flex items-center justify-center gap-1">
-                  <AlertOctagon className="h-3 w-3 text-red-500" /> All inputs are monitored. Domestic or security alarms will instantly wake local department alerts.
+                  <AlertOctagon className="h-3 w-3 text-red-500" /> Helpline Quick Reference: Cyber Fraud 1930 | National Emergency 112 | Portal: cybercrime.gov.in
                 </p>
               </div>
             </>
