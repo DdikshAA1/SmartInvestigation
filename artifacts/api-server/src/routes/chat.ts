@@ -3,6 +3,7 @@ import { db, conversations, messages, alertsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { CreateConversationBody, SendMessageBody } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { gemini } from "@workspace/integrations-gemini-ai-server";
 import nodemailer from "nodemailer";
 
 const router: IRouter = Router();
@@ -87,12 +88,14 @@ function getLocalChatbotReply(userMessage: string, messageCount: number, history
   const isArabicScript = /[\u0600-\u06FF]/.test(userMessage); // Urdu / Arabic
   
   const HINGLISH_INDICATORS = [
-    "bhai", "hai", "mujhe", "kuch", "mai", "mera", "hu", "tha", "ko", "se", "kar", 
-    "naam", "hum", "police", "madad", "help", "cyber", "paisa", "chori", "bank", 
-    "account", "phish", "darr", "dhamki", "mara", "gali", "paise", "nikal", "link", 
-    "kho", "khoya", "dhokha", "thagi", "kya", "kaise", "kab", "kaha", "luta", "fraud",
-    "gpay", "paytm", "phonepe", "otp", "upi", "card", "mobile", "phone", "stolen",
-    "aamar", "taka", "panam", "dabbulu", "khemcho", "sat sri akal", "vanakkam"
+    "bhai", "hai", "mujhe", "kuch", "mai", "main", "mera", "meri", "mere", "hu", "hoon", 
+    "tha", "thi", "the", "ko", "se", "kar", "karo", "kya", "kaise", "kab", "kaha", "kahin",
+    "naam", "hum", "police", "madad", "help", "cyber", "paisa", "paise", "chori", "bank", 
+    "account", "phish", "darr", "dhamki", "mara", "gali", "nikal", "link", "kho", "khoya", 
+    "dhokha", "thagi", "luta", "fraud", "gpay", "paytm", "phonepe", "otp", "upi", "card", 
+    "mobile", "phone", "stolen", "aamar", "taka", "panam", "dabbulu", "khemcho", 
+    "sat sri akal", "vanakkam", "response", "nhi", "nahi", "raha", "rahi", "ho", "gaya",
+    "karke", "batao", "sunno", "dekho", "kaam", "sir", "mam", "ji", "samajh", "aaya", "ache"
   ];
   const isHinglish = HINGLISH_INDICATORS.some(word => msg.includes(word));
 
@@ -405,7 +408,32 @@ STRICT MULTI-LINGUAL & NLP DIRECTIVES:
       });
       replyContent = response.choices[0]?.message?.content ?? "";
     } catch (aiErr) {
-      console.warn("OpenAI API call failed or credentials missing, utilizing multi-script local fallback:", aiErr);
+      console.warn("OpenAI API call bypassed/failed, trying Gemini AI...", aiErr);
+    }
+
+    // Tier 2: Gemini AI if OpenAI was empty or failed
+    if (!replyContent || !replyContent.trim()) {
+      try {
+        const geminiModel = gemini.getModel("gemini-1.5-flash");
+        const fullPrompt = `You are Vanguard AI Cyber & Crime Assistant, an expert Police & Cyber Intake Officer.
+Constraint: You MUST reply in the EXACT SAME LANGUAGE, SCRIPT, and DIALECT used by the user in their message. (If Devanagari Hindi, reply in Devanagari Hindi; if Hinglish, reply in Hinglish; if Tamil, reply in Tamil; if Bengali, reply in Bengali, etc.).
+Give real helpline numbers (1930 for Cyber Fraud, 112 for Emergency, CEIR for Lost Phone, 1091 for Women Safety).
+
+Conversation History:
+${history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
+
+USER MESSAGE: ${userContent}
+ASSISTANT REPLY IN USER'S EXACT LANGUAGE:`;
+
+        const result = await geminiModel.generateContent(fullPrompt);
+        replyContent = result.response.text();
+      } catch (geminiErr) {
+        console.warn("Gemini AI call bypassed/failed, utilizing Multi-Script Local Fallback Engine:", geminiErr);
+      }
+    }
+
+    // Tier 3: Local Robust Multi-Lingual NLP Fallback Engine
+    if (!replyContent || !replyContent.trim()) {
       replyContent = getLocalChatbotReply(userContent, history.length - 1, history);
     }
 

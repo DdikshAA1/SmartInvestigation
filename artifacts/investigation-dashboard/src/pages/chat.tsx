@@ -261,6 +261,20 @@ export default function Chat() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setTypedMessage("আমার ব্যাংক অ্যাকাউন্ট থেকে টাকা কেটে নেওয়া হয়েছে, সাহায্য করুন।")}
+                  className="text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  🌾 বাংলা ফ্রড
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTypedMessage("என் வங்கி கணக்கில் இருந்து பணம் திருடப்பட்டது, உதவி செய்யவும்.")}
+                  className="text-[10px] font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 hover:bg-pink-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
+                >
+                  🌴 தமிழ் உதவி
+                </button>
+                <button
+                  type="button"
                   onClick={() => setTypedMessage("Mera mobile phone lost/chori ho gaya hai. IMEI block kaise karein?")}
                   className="text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 px-2 py-1 rounded-md shrink-0 transition-colors"
                 >

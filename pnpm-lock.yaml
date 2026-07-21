@@ -97,6 +97,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      '@workspace/integrations-gemini-ai-server':
+        specifier: workspace:*
+        version: link:../../lib/integrations-gemini-ai-server
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
