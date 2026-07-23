@@ -513,6 +513,44 @@ To view this full secure thread, please check the Vanguard Admin Dashboard.
     // 4. Fetch entire thread history for AI context
     const history = await db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
 
+    // Detect language script/dialect for userContent
+    const isHindiScript = /[\u0900-\u097F]/.test(userContent);
+    const isBengaliScript = /[\u0980-\u09FF]/.test(userContent);
+    const isGurmukhiScript = /[\u0A00-\u0A7F]/.test(userContent);
+    const isGujaratiScript = /[\u0A80-\u0AFF]/.test(userContent);
+    const isTamilScript = /[\u0B80-\u0BFF]/.test(userContent);
+    const isTeluguScript = /[\u0C00-\u0C7F]/.test(userContent);
+    const isKannadaScript = /[\u0C80-\u0CFF]/.test(userContent);
+    const isMalayalamScript = /[\u0D00-\u0D7F]/.test(userContent);
+    const isArabicScript = /[\u0600-\u06FF]/.test(userContent);
+
+    const INDIC_ROMAN_WORDS = [
+      "hai", "ho", "hu", "tha", "thi", "the", "me", "mein", "pe", "par", "ne", "se", "ko", 
+      "mera", "meri", "mere", "mujhe", "mujhko", "hum", "humne", "aap", "aapka", "aapne", 
+      "bhai", "sir", "mam", "madad", "help", "chori", "paise", "paisa", "rupees", "rs", 
+      "bank", "upi", "fraud", "scam", "thagi", "link", "account", "gpay", "paytm", "phonepe", 
+      "otp", "call", "number", "threat", "dhamki", "police", "complaint", "report", "lost", 
+      "mobile", "phone", "photo", "video", "viral", "hack", "hacked", "hacking", "aamar", 
+      "taka", "panam", "dabbulu", "khemcho", "sat sri akal", "vanakkam", "response", "nhi", 
+      "nahi", "raha", "rahi", "ho", "gaya", "karke", "batao", "sunno", "dekho", "kaam", 
+      "sir", "mam", "ji", "samajh", "aaya", "ache"
+    ];
+    const isHinglish = !isHindiScript && !isBengaliScript && !isTamilScript && !isTeluguScript && 
+                      !isGujaratiScript && !isGurmukhiScript && !isKannadaScript && !isMalayalamScript && !isArabicScript &&
+                      INDIC_ROMAN_WORDS.some(word => userContent.toLowerCase().includes(word));
+
+    let detectedLang = "english";
+    if (isHindiScript) detectedLang = "hindi";
+    else if (isHinglish) detectedLang = "hinglish";
+    else if (isBengaliScript) detectedLang = "bengali";
+    else if (isTamilScript) detectedLang = "tamil";
+    else if (isTeluguScript) detectedLang = "telugu";
+    else if (isGujaratiScript) detectedLang = "gujarati";
+    else if (isGurmukhiScript) detectedLang = "punjabi";
+    else if (isKannadaScript) detectedLang = "kannada";
+    else if (isMalayalamScript) detectedLang = "malayalam";
+    else if (isArabicScript) detectedLang = "urdu";
+
     // 5. Generate reply via OpenAI or Local Fallback
     let replyContent = "";
     try {
@@ -520,36 +558,25 @@ To view this full secure thread, please check the Vanguard Admin Dashboard.
         {
           role: "system" as const,
           content: `You are Vanguard AI Cyber & Crime Assistant, an expert, highly empathetic, NLP-driven Police & Cyber Intake Officer.
-You are trained to accept ANY language in the world (English, Hinglish, Hindi, Marathi, Bengali, Tamil, Telugu, Gujarati, Punjabi, Kannada, Malayalam, Urdu, Spanish, French, German, Arabic, etc.) and seamlessly converse in that exact same language.
 
-STRICT MULTI-LINGUAL & NLP DIRECTIVES:
-1. MANDATORY LANGUAGE & SCRIPT MIRRORING:
-   - Automatically detect the language, script, and dialect of the user's message.
-   - You MUST reply in the EXACT SAME LANGUAGE and SCRIPT/DIALECT as the user's input.
-   - If the user writes in Devanagari Hindi, reply in Devanagari Hindi.
-   - If the user writes in Hinglish (Romanized Hindi), reply in Hinglish.
-   - If the user writes in Marathi, Tamil, Bengali, Punjabi, Gujarati, Urdu, Spanish, etc., reply in that exact language.
-   - NEVER default back to English unless the user explicitly asked in English.
+STRICT LANGUAGE & SCRIPT MIRRORING CONSTRAINT:
+- The user's input language has been pre-detected as: ${detectedLang.toUpperCase()}.
+- You MUST reply in the EXACT SAME LANGUAGE and SCRIPT/DIALECT as detected.
+- If HINGLISH, you MUST write your entire response in Romanized Hindi/Hinglish (e.g., "Aap bilkul chinta mat kijiye. Hum aapki poori help karenge. Kya aapka paisa online transaction se fraud hua hai?"). Do NOT use Hindi script and do NOT respond in English.
+- If HINDI, write in Devanagari Hindi script.
+- If BENGALI, TAMIL, TELUGU, GUJARATI, PUNJABI, etc., write in that exact script.
+- NEVER reply in English unless the detected language is English.
 
-2. NLP DEEP ENTITY & INTENT EXTRACTION:
-   - Understand the user's intent (Financial Cyber Fraud, Cyberstalking/Blackmail, Phone Theft, Emergency Threat, Scam).
-   - Extract key facts (amount of money lost, bank name, transaction ID, date/time, suspect username/number, location) and acknowledge them in the user's language so they feel heard.
-
-3. ACCURATE STEP-BY-STEP HELP IN THE USER'S LANGUAGE:
-   - Financial Cyber Fraud (Bank/UPI/OTP scam): Tell them to immediately call National Cyber Helpline 1930 (Golden Hour window to freeze funds), register on cybercrime.gov.in, and block bank cards/UPI.
-   - Cyberstalking / Blackmail: Tell them NOT to pay money, save screenshots of chat/profile link, block suspect, and file at cybercrime.gov.in or call Women Helpline 1091 / Emergency 112.
-   - Lost/Stolen Mobile: Guide them to block IMEI on Govt CEIR portal (ceir.gov.in), block SIM card, and file Lost Property Report.
-   - Physical Danger / Threat: Guide them to seek safe shelter immediately and call National Emergency 112 or Police 100.
-
-4. DYNAMIC & NATURAL DIALOGUE:
-   - Do NOT use mechanical or repetitive templates.
-   - Ask 1 or 2 specific follow-up questions for missing details (such as Transaction UTR, Suspect Handle, or Screenshots).
-   - Keep answers concise (2-4 sentences or clear bullet points) and deeply empathetic.`
+Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112 for Emergency, CEIR for Lost Phone, 1091 for Women Safety) and ask 1-2 key follow-up questions.`
         },
         ...history.map(m => ({
           role: m.role as "user" | "assistant" | "system",
           content: m.content
-        }))
+        })),
+        {
+          role: "system" as const,
+          content: `STRICT REQUIREMENT: The user's last message is written in ${detectedLang.toUpperCase()}. You MUST compose your entire response in ${detectedLang.toUpperCase()}. If HINGLISH, you must write only in Romanized Hindi (Hinglish). Do NOT reply in English.`
+        }
       ];
 
       const response = await openai.chat.completions.create({
@@ -567,13 +594,15 @@ STRICT MULTI-LINGUAL & NLP DIRECTIVES:
       try {
         const geminiModel = gemini.getModel("gemini-1.5-flash");
         const fullPrompt = `You are Vanguard AI Cyber & Crime Assistant, an expert Police & Cyber Intake Officer.
-Constraint: You MUST reply in the EXACT SAME LANGUAGE, SCRIPT, and DIALECT used by the user in their message. (If Devanagari Hindi, reply in Devanagari Hindi; if Hinglish, reply in Hinglish; if Tamil, reply in Tamil; if Bengali, reply in Bengali, etc.).
+Constraint: You MUST reply in the EXACT SAME LANGUAGE, SCRIPT, and DIALECT used by the user in their message.
+The user's message is in: ${detectedLang.toUpperCase()}.
 Give real helpline numbers (1930 for Cyber Fraud, 112 for Emergency, CEIR for Lost Phone, 1091 for Women Safety).
 
 Conversation History:
 ${history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
 
 USER MESSAGE: ${userContent}
+STRICT INSTRUCTION: Respond in ${detectedLang.toUpperCase()} ONLY. Do NOT use English unless the detected language is English.
 ASSISTANT REPLY IN USER'S EXACT LANGUAGE:`;
 
         const result = await geminiModel.generateContent(fullPrompt);
