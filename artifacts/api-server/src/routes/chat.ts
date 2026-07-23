@@ -75,7 +75,7 @@ async function sendEmailNotification(subject: string, text: string) {
 function getLocalChatbotReply(userMessage: string, messageCount: number, history: any[]): string {
   const msg = userMessage.toLowerCase();
 
-  // Detect language scripts
+  // Detect language scripts & dialects
   const isHindiScript = /[\u0900-\u097F]/.test(userMessage); // Devanagari (Hindi, Marathi)
   const isBengaliScript = /[\u0980-\u09FF]/.test(userMessage); // Bengali
   const isGurmukhiScript = /[\u0A00-\u0A7F]/.test(userMessage); // Punjabi
@@ -86,106 +86,224 @@ function getLocalChatbotReply(userMessage: string, messageCount: number, history
   const isKannadaScript = /[\u0C80-\u0CFF]/.test(userMessage); // Kannada
   const isMalayalamScript = /[\u0D00-\u0D7F]/.test(userMessage); // Malayalam
   const isArabicScript = /[\u0600-\u06FF]/.test(userMessage); // Urdu / Arabic
-  
-  const HINGLISH_INDICATORS = [
-    "bhai", "hai", "mujhe", "kuch", "mai", "main", "mera", "meri", "mere", "hu", "hoon", 
-    "tha", "thi", "the", "ko", "se", "kar", "karo", "kya", "kaise", "kab", "kaha", "kahin",
-    "naam", "hum", "police", "madad", "help", "cyber", "paisa", "paise", "chori", "bank", 
-    "account", "phish", "darr", "dhamki", "mara", "gali", "nikal", "link", "kho", "khoya", 
-    "dhokha", "thagi", "luta", "fraud", "gpay", "paytm", "phonepe", "otp", "upi", "card", 
-    "mobile", "phone", "stolen", "aamar", "taka", "panam", "dabbulu", "khemcho", 
-    "sat sri akal", "vanakkam", "response", "nhi", "nahi", "raha", "rahi", "ho", "gaya",
-    "karke", "batao", "sunno", "dekho", "kaam", "sir", "mam", "ji", "samajh", "aaya", "ache"
+
+  const INDIC_ROMAN_WORDS = [
+    "hai", "ho", "hu", "tha", "thi", "the", "me", "mein", "pe", "par", "ne", "se", "ko", 
+    "mera", "meri", "mere", "mujhe", "mujhko", "hum", "humne", "aap", "aapka", "aapne", 
+    "bhai", "sir", "mam", "madad", "help", "chori", "paise", "paisa", "rupees", "rs", 
+    "bank", "upi", "fraud", "scam", "thagi", "link", "account", "gpay", "paytm", "phonepe", 
+    "otp", "call", "number", "threat", "dhamki", "police", "complaint", "report", "lost", 
+    "mobile", "phone", "photo", "video", "viral", "hack", "hacked", "hacking", "aamar", 
+    "taka", "panam", "dabbulu", "khemcho", "sat sri akal", "vanakkam", "response", "nhi", 
+    "nahi", "raha", "rahi", "ho", "gaya", "karke", "batao", "sunno", "dekho", "kaam", 
+    "sir", "mam", "ji", "samajh", "aaya", "ache"
   ];
-  const isHinglish = HINGLISH_INDICATORS.some(word => msg.includes(word));
+  
+  // If no native Indic script was detected, check if Romanized Indic or Hinglish
+  const isHinglish = !isHindiScript && !isBengaliScript && !isTamilScript && !isTeluguScript && 
+                    !isGujaratiScript && !isPunjabiScript && !isKannadaScript && !isMalayalamScript && !isArabicScript &&
+                    INDIC_ROMAN_WORDS.some(word => msg.includes(word));
 
-  // Scenario Keywords
-  const financialKeywords = ["money", "paisa", "paise", "taka", "panam", "dabbulu", "rupees", "bank", "account", "gpay", "phonepe", "paytm", "upi", "card", "otp", "stolen money", "fraud", "scam", "thagi", "transfer", "utr", "deducted", "luta", "credit", "debit"];
-  const stalkingKeywords = ["stalk", "harass", "blackmail", "photo", "video", "morph", "fake profile", "instagram", "whatsapp", "telegram", "threaten", "dhamki", "gali", "private", "nude", "leak"];
-  const phoneTheftKeywords = ["phone", "mobile", "imei", "stolen phone", "chori phone", "lost phone", "sim", "device", "handset"];
-  const criticalKeywords = ["kill", "abuse", "violence", "threat", "weapon", "forced", "hurt", "danger", "fight", "assault", "rape", "gun", "knife", "safety", "emergency", "blood", "attack", "suicide"];
-  const suspectKeywords = ["name", "suspect", "identity", "who", "alias", "associate", "profile", "mitnick", "ivanov", "petrova", "person", "look like"];
-  const evidenceKeywords = ["file", "photo", "image", "proof", "screenshot", "video", "document", "record", "receipt", "chat log"];
-  const greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "namaste", "pranam", "vanakkam", "namaskaram", "sat sri akal", "khemcho", "nomoshkar"];
+  // Determine Primary Target Language
+  let lang = "english";
+  if (isHindiScript) lang = "hindi";
+  else if (isHinglish) lang = "hinglish";
+  else if (isBengaliScript) lang = "bengali";
+  else if (isTamilScript) lang = "tamil";
+  else if (isTeluguScript) lang = "telugu";
+  else if (isGujaratiScript) lang = "gujarati";
+  else if (isPunjabiScript) lang = "punjabi";
+  else if (isKannadaScript) lang = "kannada";
+  else if (isMalayalamScript) lang = "malayalam";
+  else if (isArabicScript) lang = "urdu";
 
-  const hasGreeting = greetings.some(word => msg.includes(word));
+  // Category Triggers
+  const financialKeywords = ["money", "paisa", "paise", "taka", "panam", "dabbulu", "rupees", "rs", "bank", "account", "gpay", "phonepe", "paytm", "upi", "card", "otp", "stolen money", "fraud", "scam", "thagi", "transfer", "utr", "deducted", "luta", "credit", "debit", "kat", "hacked"];
+  const stalkingKeywords = ["stalk", "harass", "blackmail", "photo", "video", "morph", "fake profile", "instagram", "whatsapp", "telegram", "threaten", "dhamki", "gali", "private", "nude", "leak", "viral"];
+  const phoneTheftKeywords = ["phone", "mobile", "imei", "stolen phone", "chori phone", "lost phone", "sim", "device", "handset", "chori"];
+  const criticalKeywords = ["kill", "abuse", "violence", "threat", "weapon", "forced", "hurt", "danger", "fight", "assault", "rape", "gun", "knife", "safety", "emergency", "blood", "attack", "suicide", "mara", "dhamki"];
+
   const isFinancial = financialKeywords.some(word => msg.includes(word));
   const isStalking = stalkingKeywords.some(word => msg.includes(word));
   const isPhoneTheft = phoneTheftKeywords.some(word => msg.includes(word));
   const isCritical = criticalKeywords.some(word => msg.includes(word));
-  const hasSuspect = suspectKeywords.some(word => msg.includes(word));
-  const hasEvidence = evidenceKeywords.some(word => msg.includes(word));
 
-  // 1. GREETING STAGE
-  if (messageCount === 0 && hasGreeting) {
-    if (isBengaliScript) return "নমস্কার। এটি একটি সুরক্ষিত সাইবার সাহায্য সেল। আপনার তথ্য সম্পূর্ণ গোপন রাখা হবে। সাইবার জালিয়াতি, ফোন চুরি বা ব্ল্যাকমেইলের ঘটনা জানান।";
-    if (isTamilScript) return "வணக்கம்! இது பாதுகாப்பான சைபர் உதவி மையம். உங்கள் தகவல் முற்றிலும் பாதுகாப்பானது. உங்கள் புகாரை விவரிக்கவும்.";
-    if (isTeluguScript) return "నమస్కారం! ఇది సురక్షితమైన సైబర్ సాయం కేంద్రం. మీ సమాచారం పూర్తిగా గోప్యంగా ఉంటుంది. మీ సమస్యను వివరించండి.";
-    if (isPunjabiScript) return "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ। ਇਹ ਸੁਰੱਖਿਅਤ ਸਾਈਬਰ ਹੈਲਪ ਡੈਸਕ ਹੈ। ਆਪਣੀ ਸਮੱਸਿਆ (ਸਾਈਬਰ ਫ੍ਰਾਡ, ਮੋਬਾਈਲ ਚੋਰੀ) ਬਾਰੇ ਦੱਸੋ।";
-    if (isGujaratiScript) return "નમસ્તે! આ સુરક્ષિત સાયબર હેલ્પ સેલ છે. તમારી સમસ્યા વિગતવાર જણાવો.";
-    if (isHindiScript) return "नमस्ते। यह गोपनीय पुलिस सहायता और रिपोर्टिंग सेल है। आपकी बातचीत पूरी तरह से सुरक्षित है। कृपया अपनी समस्या बताएं (वित्तीय धोखाधड़ी, ब्लैकमेल, खोया फोन)।";
-    if (isHinglish) return "Namaste! Main Vanguard Cyber Help Assistant hoon. Aapki baat encrypted hai. Bataiye kya problem hui hai - paise ki thagi, harassment, lost phone ya koi threat?";
-    return "Hello! I am your Vanguard Cyber Assistance Officer. Your conversation is 100% confidential and encrypted. Please describe your issue (cyber fraud, harassment, lost phone, or threat).";
-  }
+  // Empathetic Openings
+  const openings: Record<string, string[]> = {
+    english: [
+      "We understand this is stressful. We are here to guide you step-by-step.",
+      "Thank you for reaching out securely. Your safety and privacy are our top priorities.",
+      "We have logged your description. Rest assured, this workspace is secure.",
+      "Let's work together to resolve this issue as quickly as possible."
+    ],
+    hindi: [
+      "हम समझते हैं कि यह समय आपके लिए तनावपूर्ण है। हम आपकी पूरी सहायता करेंगे।",
+      "सुरक्षित रूप से संपर्क करने के लिए धन्यवाद। आपकी सुरक्षा और गोपनीयता हमारी प्राथमिकता है।",
+      "आपकी समस्या दर्ज कर ली गई है। कृपया बिल्कुल भी न घबराएं।",
+      "हम इस संकट की घड़ी में आपके साथ हैं और आपको सही सलाह देंगे।"
+    ],
+    hinglish: [
+      "Hum samajhte hain ye situation stressful hai, but don't worry, hum poori help karenge.",
+      "Securely contact karne ke liye thank you. Aapki privacy humari top priority hai.",
+      "Aapke details note kar liye gaye hain. Bilkul chinta mat kijiye.",
+      "Hum aapko step-by-step guide karenge taaki ye issue jald solve ho sake."
+    ],
+    bengali: [
+      "আমরা বুঝতে পারছি এটি আপনার জন্য উদ্বেগের বিষয়। আমরা আপনাকে সাহায্য করব।",
+      "নিরাপদে যোগাযোগ করার জন্য ধন্যবাদ। আপনার তথ্য সম্পূর্ণ গোপন থাকবে।"
+    ],
+    tamil: [
+      "நாங்கள் உங்களுக்கு உதவ இங்கே இருக்கிறோம். உங்கள் தகவல் பாதுகாப்பானது.",
+      "தொடர்பு கொண்டதற்கு நன்றி. உங்கள் பாதுகாப்பே எங்களது முக்கிய நோக்கம்."
+    ],
+    telugu: [
+      "మేము మీకు సహాయం చేయడానికి ఇక్కడ ఉన్నాము. మీ సమాచారం సురક્ષితం.",
+      "మమ్మల్ని సంప్రదించినందుకు ధన్యవాదాలు. మీ భద్రత మా ప్రాధాన్యత."
+    ],
+    gujarati: [
+      "અમે તમારી ચિંતા સમજી શકીએ છીએ. અમે તમને સંપૂર્ણ માર્ગદર્શન આપીશું.",
+      "સંપર્ક કરવા બદલ આભાર. તમારી સુરક્ષા અને ગોપનીયતા અમારી પ્રાથમિકતા છે."
+    ],
+    punjabi: [
+      "ਅਸੀਂ ਸਮਝਦੇ ਹਾਂ ਕਿ ਇਹ ਸਮਾਂ ਚਿੰਤਾਜਨਕ ਹੈ। ਅਸੀਂ ਤੁਹਾਡੀ ਪੂਰੀ ਮਦਦ ਕਰਾਂਗੇ।",
+      "ਸੰਪਰਕ ਕਰਨ ਲਈ ਧੰਨਵਾਦ। ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਸਾਡੀ ਪਹਿਲ ਹੈ।"
+    ],
+    kannada: [
+      "ನಾವು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು ಇಲ್ಲಿದ್ದೇವೆ. ನಿಮ್ಮ ಮಾಹಿತಿ ಸುರಕ್ಷಿತವಾಗಿದೆ."
+    ],
+    malayalam: [
+      "ഞങ്ങൾ നിങ്ങളെ സഹായിക്കാൻ ഇവിടെയുണ്ട്. നിങ്ങളുടെ വിവരങ്ങൾ സുരക്ഷിതമാണ്."
+    ],
+    urdu: [
+      "ہم سمجھتے ہیں کہ یہ پریشانی کا وقت ہے۔ ہم آپ کی پوری رہنمائی کریں گے۔"
+    ]
+  };
 
-  // 2. CRITICAL / EMERGENCY WARNINGS
-  if (isCritical) {
-    if (isBengaliScript) return "🚨 আপনার নিরাপত্তা সবচেয়ে গুরুত্বপূর্ণ! জরুরি অবস্থায় ১১২ বা ১০০ নম্বরে কল করুন। অনলাইন সাইবার ফ্রডের ক্ষেত্রে অবিলম্বে ১৯ ৩০ নম্বরে কল করুন।";
-    if (isTamilScript) return "🚨 உங்கள் பாதுகாப்பு மிகவும் முக்கியமானது! அவசரநிலைக்கு 112 அல்லது 100 ஐ அழைக்கவும். ஆன்லைன் பணமோசடிக்கு 1930 ஐ அழைக்கவும்.";
-    if (isTeluguScript) return "🚨 మీ రక్షణ అత్యంత ముఖ్యం! అత్యవసర పరిస్థితిలో 112 లేదా 100 కి కాల్ చేయండి. ఆన్‌లైన్ ఫ్రాడ్ కొరకు 1930 కి కాల్ చేయండి.";
-    if (isPunjabiScript) return "🚨 ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਸਭ ਤੋਂ ਜ਼ਰੂਰੀ ਹੈ! ਸੰਕਟ ਸਮੇਂ 112 ਜਾਂ 100 'ਤੇ ਕਾਲ ਕਰੋ। ਆਨਲਾਈਨ ਠੱਗੀ ਲਈ 1930 'ਤੇ ਕਾਲ ਕਰੋ।";
-    if (isGujaratiScript) return "🚨 તમારી સુરક્ષા સૌથી મહત્વપૂર્ણ છે! તાત્કાલિક કટોકટી માટે 112 અથવા 100 પર કૉલ કરો. સાયબર ફ્રોડ માટે 1930 પર કૉલ કરો.";
-    if (isHindiScript) return "🚨 आपकी सुरक्षा हमारी सर्वोच्च प्राथमिकता है!\n1. यदि आप किसी तात्कालिक खतरे में हैं, तो तुरंत सुरक्षित स्थान पर जाएं और आपातकालीन नंबर 112 या 100 पर कॉल करें।\n2. यदि महिला सुरक्षा से जुड़ा मामला है, तो 1091 पर संपर्क करें।\n3. हमने आपकी रिपोर्ट को 'CRITICAL' के रूप में पुलिस कंट्रोल रूम को सूचित कर दिया है। क्या आप अपना वर्तमान स्थान साझा कर सकते हैं?";
-    if (isHinglish) return "🚨 AAPKI SAFETY SABSE PEHLE HAI!\n1. Agar aap immediate physical danger me hain, toh turant safe place par jayein aur National Emergency 112 ya 100 par call karein.\n2. Women harassment ke liye 1091 par bhi call kar sakte hain.\n3. Humne ye report CRITICAL priority par mark karke supervisor alert kar diya hai. Kya aap apni location share kar sakte hain?";
-    return "🚨 YOUR SAFETY IS OUR TOP PRIORITY!\n1. If you are in immediate danger, move to a safe place and call National Emergency 112 or Police 100 immediately.\n2. For Women Safety emergencies, call 1091.\n3. We have flagged this report as CRITICAL and alerted duty officers. Can you please share your current location and if the threat is nearby?";
-  }
+  // Scenario Actions
+  const actions: Record<string, Record<string, string>> = {
+    critical: {
+      english: "🚨 CRITICAL THREAT WARNING:\n1. If you are in physical danger, call Emergency 112 or 100 immediately.\n2. For women's safety assistance, call 1091.\n3. We have flagged this report as CRITICAL for swift duty officer intake.",
+      hindi: "🚨 आपातकालीन सुरक्षा चेतावनी:\n1. यदि आप किसी खतरे में हैं, तो तुरंत 112 या 100 नंबर डायल करें।\n2. महिला सुरक्षा सहायता के लिए 1091 पर संपर्क करें।\n3. हमने इस मामले को 'अत्यंत गंभीर' श्रेणी में कंट्रोल रूम को सूचित कर दिया है।",
+      hinglish: "🚨 EMERGENCY ALERT:\n1. Agar immediate physical danger hai, toh turant 112 ya 100 call karein.\n2. Women assistance ke liye helpline 1091 active hai.\n3. Humne ye report CRITICAL priority par mark karke supervisor ko alert kar diya hai.",
+      bengali: "🚨 জরুরি সতর্কতা: শারীরিক বিপদে অবিলম্বে ১১২ বা ১০০ নম্বরে কল করুন। নারী সুরক্ষার জন্য ১০৯১ নম্বরে যোগাযোগ করুন।",
+      tamil: "🚨 அவசர எச்சரிக்கை: உடனடி ஆபத்தில் இருந்தால் 112 அல்லது 100 ஐ அழைக்கவும். பெண்கள் உதவிக்கு 1091 ஐ அழைக்கவும்.",
+      telugu: "🚨 అత్యవసర హెచ్చరిక: ప్రమాదంలో ఉంటే వెంటనే 112 లేదా 100 కి కాల్ చేయండి. మహిళల సహాయానికి 1091 కి కాల్ చేయండి.",
+      gujarati: "🚨 કટોકટી ચેતવણી: જો શારીરિક જોખમ હોય તો તાત્કાલિક 112 અથવા 100 પર કૉล કરો. મહિલા મદદ માટે 1091 પર કૉલ કરો.",
+      punjabi: "🚨 ਸੰਕਟ ਚੇਤਾਵਨੀ: ਜੇਕਰ ਕੋਈ ਖ਼ਤਰਾ ਹੈ ਤਾਂ ਤੁਰੰਤ 112 ਜਾਂ 100 'ਤੇ ਕਾਲ ਕਰੋ। ਔਰਤਾਂ ਦੀ ਸੁਰੱਖਿਆ ਲਈ 1091 'ਤੇ ਕਾਲ ਕਰੋ।"
+    },
+    financial: {
+      english: "💳 CYBER FINANCIAL FRAUD ACTION PLAN:\n1. Call National Cyber Helpline 1930 immediately (freeze money in Golden Hour).\n2. Register an official complaint on cybercrime.gov.in.\n3. Block your Bank cards, Netbanking, and UPI credentials immediately.",
+      hindi: "💳 साइबर वित्तीय धोखाधड़ी निवारण योजना:\n1. तुरंत साइबर हेल्पलाइन 1930 डायल करें (गोल्डन आवर में पैसे फ्रीज कराने के लिए)।\n2. आधिकारिक पोर्टल cybercrime.gov.in पर शिकायत दर्ज करें।\n3. तुरंत बैंक से संपर्क कर अपने कार्ड, नेटबैंकिंग और यूपीआई ब्लॉक कराएं।",
+      hinglish: "💳 FINANCIAL SCAM RESOLUTION STEPS:\n1. Turant National Cyber Helpline 1930 par call karein taaki transactions freeze ho sakein ('Golden Hour').\n2. Official portal cybercrime.gov.in par apni complaint register karein.\n3. Apne bank cards, netbanking aur UPI accounts block karayein.",
+      bengali: "💳 সাইবার ফ্রড অ্যাকশন প্ল্যান: অবিলম্বে সাইবার হেল্পলাইন ১৯৩০ নম্বরে কল করে টাকা ফ্রিজ করুন এবং cybercrime.gov.in-এ অভিযোগ দায়ের করুন।",
+      tamil: "💳 சைபர் மோசடி உதவி: உடனடியாக 1930 ஐ அழைத்து பணத்தை முடக்கவும். cybercrime.gov.in இல் புகார் அளிக்கவும்.",
+      telugu: "💳 சைபர் ఫ్రాడ్ సహాయం: వెంటనే 1930 హెల్ప్‌లైన్‌కు కాల్ చేసి డబ్బులను బ్లాక్ చేయండి. cybercrime.gov.in లో ఫిర్యాదు చేయండి.",
+      gujarati: "💳 સાયબર નાણાકીય ફ્રોડ મદદ: તુરંત 1930 સાયબર હેલ્પલાઇન પર કૉલ કરી પૈસા ફ્રીઝ કરાવો અને cybercrime.gov.in પર ફરિયાદ કરો.",
+      punjabi: "💳 ਸਾਈਬਰ ਵਿੱਤੀ ਠੱਗੀ ਮਦਦ: ਤੁਰੰਤ 1930 'ਤੇ ਕਾਲ ਕਰਕੇ ਪੈਸੇ ਫ੍ਰੀਜ਼ ਕਰਵਾਓ ਅਤੇ cybercrime.gov.in 'ਤੇ ਸ਼ਿਕायत ਦਰਜ ਕਰੋ।"
+    },
+    stalking: {
+      english: "🛡️ CYBERSTALKING & BLACKMAIL ADVISORY:\n1. DO NOT PAY ANY MONEY. Extortionists never stop after the first payment.\n2. Save screenshots of all chat logs, suspect usernames, and links.\n3. Lodge a report confidentially at cybercrime.gov.in or call Women Safety 1091.",
+      hindi: "🛡️ साइबर ब्लैकमेल और उत्पीड़न सुरक्षा निर्देश:\n1. आरोपी को कोई पैसा न दें। पैसा देने से ब्लैकमेलिंग कभी बंद नहीं होती।\n2. सभी चैट, संदेही के प्रोफाइल लिंक और स्क्रीनशॉट सुरक्षित रखें।\n3. cybercrime.gov.in पर रिपोर्ट दर्ज करें या 1091 महिला हेल्पलाइन पर कॉल करें।",
+      hinglish: "🛡️ CYBER HARASSMENT / BLACKMAIL ADVISORY:\n1. Blackmailer ko ek bhi paisa mat dena. Paisa dene se blackmailing badhti hai.\n2. Chat screenshots, call recordings aur social profile links safe rakhein.\n3. Confidential complaint cybercrime.gov.in par register karein ya 1091 par call karein.",
+      bengali: "🛡️ সাইবার ব্ল্যাকমেইল নির্দেশিকা: কোনো টাকা দেবেন না। সমস্ত চ্যাট ও প্রোফাইল স্ক্রিনশট রাখুন এবং cybercrime.gov.in-এ অভিযোগ জানান।",
+      tamil: "🛡️ சைபர் மிரட்டல் உதவி: பணம் கொடுக்க வேண்டாம். சாட் ஸ்கிரீன்ஷாட்களை சேமித்து cybercrime.gov.in இல் புகார் அளிக்கவும்.",
+      telugu: "🛡️ సైబర్ బ్లాక్‌మెయిల్ సహాయం: డబ్బు చెల్లించవద్దు. స్క్రీన్‌షాట్లు సేవ్ చేసుకొని cybercrime.gov.in లో ఫిర్యాదు చేయండి.",
+      gujarati: "🛡️ સાયબર બ્લેકમેઇલ મદદ: પૈસા આપશો નહીં. સ્ક્રીનશોટ સાચવીને રાખવા અને cybercrime.gov.in પર ફરિયાદ નોંધાવો.",
+      punjabi: "🛡️ ਬਲੈਕਮੇਲ ਮਦਦ: ਕੋਈ ਪੈਸਾ ਨਾ ਦਿਓ। ਸਕ੍ਰੀਨਸ਼ੌਟ ਸੰਭਾਲ ਕੇ ਰੱਖੋ ਅਤੇ cybercrime.gov.in 'ਤੇ ਸ਼ਿਕायत ਕਰੋ।"
+    },
+    phoneTheft: {
+      english: "📱 LOST/STOLEN PHONE INTEL:\n1. Block your IMEI on the Central Equipment Identity Register (ceir.gov.in).\n2. Block your SIM card with your operator to prevent OTP misuse.\n3. File a Stolen Property Report with your local state police station/app.",
+      hindi: "📱 खोया या चोरी हुआ मोबाइल फोन:\n1. दूरसंचार विभाग के CEIR पोर्टल (ceir.gov.in) पर जाकर अपना IMEI ब्लॉक करें।\n2. ऑपरेटर से संपर्क कर तुरंत सिम कार्ड ब्लॉक कराएं ताकि ओटीपी चोरी न हो।\n3. नजदीकी पुलिस स्टेशन में खोई हुई संपत्ति की ऑनलाइन या ऑफलाइन रिपोर्ट दर्ज करें।",
+      hinglish: "📱 STOLEN/LOST PHONE INSTRUCTIONS:\n1. Telecom Department ke CEIR portal (ceir.gov.in) par jaakar IMEI block karein.\n2. SIM block karayein taaki koi OTP misue na kar sake.\n3. State police app ya local station par Lost/Stolen report file karein.",
+      bengali: "📱 মোবাইল চুরি নির্দেশিকা: ceir.gov.in পোর্টালে গিয়ে IMEI ব্লক করুন এবং থানায় হারিয়ে যাওয়া ডায়েরি করুন।",
+      tamil: "📱 போன் திருட்டு உதவி: ceir.gov.in போர்ட்டலில் IMEI ஐ முடக்கவும். காவல் நிலையத்தில் புகார் அளிக்கவும்.",
+      telugu: "📱 ఫోన్ దొంగతనం సహాయం: ceir.gov.in లో IMEI ని బ్లాక్ చేయండి మరియు పోలీస్ స్టేషన్‌లో ఫిర్యాదు చేయండి.",
+      gujarati: "📱 ફોન ચોરી મદદ: ceir.gov.in પોર્ટલ પર IMEI બ્લોક કરો અને પોલીસ સ્ટેશનમાં જાણ કરો.",
+      punjabi: "📱 ਮੋਬਾਈਲ ਚੋਰੀ ਮਦਦ: ceir.gov.in 'ਤੇ IMEI ਬਲਾਕ ਕਰੋ ਅਤੇ ਪੁਲਿਸ ਸਟੇਸ਼ਨ ਵਿੱਚ ਰਿਪੋਰਟ ਦਰਜ ਕਰੋ।"
+    },
+    general: {
+      english: "ℹ️ GENERAL SECURE ASSISTANCE:\n1. For online financial scams, report instantly at National Cyber Helpline 1930.\n2. For immediate safety risks, call 112.\n3. File a detailed case record at official cybercrime.gov.in portal.",
+      hindi: "ℹ️ सामान्य साइबर सहायता दिशानिर्देश:\n1. साइबर ठगी (वित्तीय) की रिपोर्ट तुरंत 1930 पर कॉल करके दर्ज कराएं।\n2. तात्कालिक शारीरिक संकट में पुलिस सहायता के लिए 112 डायल करें।\n3. अपनी शिकायत का पूरा विवरण cybercrime.gov.in पर दर्ज करें।",
+      hinglish: "ℹ️ GENERAL ADVISORY:\n1. Cyber fraud case me turant 1930 helpline number par inform karein.\n2. Emergency safety issue ho toh call 112 immediately.\n3. Official complaints ke liye cybercrime.gov.in portal visit karein.",
+      bengali: "ℹ️ সাধারণ নির্দেশিকা: সাইবার জালিয়াতির ক্ষেত্রে ১৯৩০ নম্বরে এবং জরুরি সুরক্ষা সহায়তায় ১১২ নম্বরে কল করুন।",
+      tamil: "ℹ️ பொது உதவி: சைபர் மோசடிக்கு 1930 ஐயும், அவசர உதவிக்கு 112 ஐயும் அழைக்கவும்.",
+      telugu: "ℹ️ సాధారణ సహాయం: సైబర్ మోసాలకు 1930 కి, అత్యవసర సహాయానికి 112 కి కాల్ చేయండి.",
+      gujarati: "ℹ️ સામાન્ય માર્ગદર્શન: સાયબર ફ્રોડ માટે 1930 અને કટોકટી સુરક્ષા માટે 112 પર સંપર્ક કરો.",
+      punjabi: "ℹ️ ਆਮ ਮਦਦ: ਸਾਈਬਰ ਧੋਖਾਧੜੀ ਲਈ 1930 ਅਤੇ ਐਮਰਜੈਂਸੀ ਲਈ 112 'ਤੇ ਕਾਲ ਕਰੋ।"
+    }
+  };
 
-  // 3. FINANCIAL SCAM / BANKING FRAUD / OTP SCAM
-  if (isFinancial) {
-    if (isBengaliScript) return "💳 সাইবার জালিয়াতি সাহায্য নির্দেশিকা:\n১. ন্যাশনাল সাইবার হেল্পলাইন ১৯৩০ নম্বরে কল করে টাকা ব্লক করুন।\n২. cybercrime.gov.in পোর্টালে অভিযোগ দায়ের করুন।\n৩. আপনার ব্যাংক কার্ড ও ইউপিআই ব্লক করুন।";
-    if (isTamilScript) return "💳 சைபர் மோசடி உதவி:\n1. உடனடியாக 1930 என்ற எண்ணை அழைத்து பணத்தை முடக்கவும்.\n2. cybercrime.gov.in இல் புகார் அளிக்கவும்.\n3. உங்கள் வங்கி கார்டு மற்றும் UPI ஐ முடக்கவும்.";
-    if (isTeluguScript) return "💳 సైబర్ ఫ్రాడ్ సహాయం:\n1. వెంటనే 1930 హెల్ప్‌లైన్‌కు కాల్ చేసి డబ్బులను స్తంభింపజేయండి.\n2. cybercrime.gov.in లో ఫిర్యాదు చేయండి.\n3. బ్యాంక్ కార్డ్స్ & UPI ని బ్లాక్ చేయండి.";
-    if (isPunjabiScript) return "💳 ਸਾਈਬਰ ਠੱਗੀ ਮਦਦ:\n1. ਤੁਰੰਤ 1930 ਹੈਲਪਲਾਈਨ 'ਤੇ ਕਾਲ ਕਰਕੇ ਪੈਸੇ ਫ੍ਰੀਜ਼ ਕਰਵਾਓ।\n2. cybercrime.gov.in 'ਤੇ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ।\n3. ਬੈਂਕ ਕਾਰਡ ਅਤੇ UPI ਬਲਾਕ ਕਰੋ।";
-    if (isGujaratiScript) return "💳 સાયબર ફ્રોડ મદદ:\n1. તુરંત 1930 સાયબર હેલ્પલાઇન પર કૉલ કરી પૈસા બ્લોક કરો.\n2. cybercrime.gov.in પર ફરિયાદ નોંધાવો.\n3. બેંક કાર્ડ અને UPI બ્લોક કરો.";
-    if (isHindiScript) return "💳 वित्तीय धोखाधड़ी (Cyber Fraud) सहायता निर्देश:\n1. तुरंत 'गोल्डन आवर' में राष्ट्रीय साइबर हेल्पलाइन 1930 पर कॉल करें ताकि आपका पैसा बैंक में ही ब्लॉक किया जा सके।\n2. अधिकारिक पोर्टल cybercrime.gov.in पर शिकायत दर्ज करें।\n3. तुरंत अपने बैंक को सूचित करके अपना डेबिट/क्रेडिट कार्ड और यूपीआई पिन ब्लॉक करवाएं।\n4. कृपया हमें बताएं: कितना पैसा कटा? बैंक का नाम? और धोखाधड़ी की तारीख/समय क्या है?";
-    if (isHinglish) return "💳 FINANCIAL CYBER FRAUD ACTION PLAN:\n1. Turant National Cyber Helpline 1930 par call karein taaki fraud money freeze ho sake ('Golden Hour').\n2. Official portal cybercrime.gov.in par complaint register karein.\n3. Apne bank ko call karke Card, Netbanking aur UPI PIN तुरंत block karayein.\n4. Kripya humein batayein: Kitne paise kataye gaye, Bank ka naam, aur Transaction ID / UTR number kya hai?";
-    return "💳 FINANCIAL CYBER FRAUD ACTION PLAN:\n1. Immediately call the National Cyber Helpline at 1930 to freeze the stolen funds during the Golden Hour window.\n2. Lodge an official report at cybercrime.gov.in.\n3. Contact your bank immediately to block your UPI ID, Net Banking, and Cards.\n4. Please provide: Total amount lost, Bank name, Transaction UTR/Ref ID, and date/time of fraud.";
-  }
+  // Dynamic Questions
+  const questionPool: Record<string, string[]> = {
+    english: [
+      "Can you please provide the total amount involved or transaction transaction IDs/UTRs if any?",
+      "Which platform (e.g. WhatsApp, Instagram, Telegram, GPay) was primarily used by the suspect?",
+      "Do you have the phone number, profile URL, or bank details of the person involved?",
+      "Can you mention when exactly this incident occurred (date and time)?"
+    ],
+    hindi: [
+      "क्या आप हमें कुल नुकसान राशि या कोई ट्रांजैक्शन आईडी (UTR) बता सकते हैं?",
+      "धोखाधड़ी में किस सोशल मीडिया प्लेटफॉर्म (जैसे WhatsApp, Instagram, GPay) का मुख्य उपयोग किया गया?",
+      "क्या आपके पास संदेही का मोबाइल नंबर, यूजरनेम या बैंक अकाउंट नंबर उपलब्ध है?",
+      "यह घटना किस तारीख और समय पर हुई, कृपया बताएं?"
+    ],
+    hinglish: [
+      "Kya aap total lost amount ya transaction reference/UTR number share kar sakte hain?",
+      "Suspect ne contact karne ke liye kaunsa platform use kiya tha (like WhatsApp, Instagram, GPay)?",
+      "Kya aapke paas suspect ka mobile number, social handle, bank details ya screenshots hain?",
+      "Ye incident kis date aur time par hua tha, kya aap bata sakte hain?"
+    ],
+    bengali: [
+      "অনুগ্রহ করে মোট কত টাকা এবং কোনো লেনদেনের তথ্য (Transaction UTR) থাকলে জানান।",
+      "অভিযুক্তের কোনো ফোন নম্বর বা সোশাল মিডিয়া আইডি আপনার কাছে আছে কি?"
+    ],
+    tamil: [
+      "மோசடியில் இழந்த தொகை அல்லது பரிவர்த்தனை எண் (UTR) ஏதேனும் இருந்தால் குறிப்பிடவும்.",
+      "சந்தேக நபரின் தொடர்பு எண் அல்லது சமூக வலைதள பக்கம் ஏதேனும் உள்ளதா?"
+    ],
+    telugu: [
+      "దయచేసి మొత్తం నష్టం విలువ లేదా ట్రాన్సాక్షన్ నంబర్ (UTR) వివరాలు చెప్పండి.",
+      "సందేహస్పద వ్యక్తి యొక్క మొబైల్ నంబర్ లేదా సోషల్ మీడియా ఐడి ఉందా?"
+    ],
+    gujarati: [
+      "કૃપા કરીને કુલ કેટલું નુકસાન થયું છે અને કોઈ ટ્રાન્ઝેક્શન વિગત (UTR) હોય તો જણાવો.",
+      "શું તમારી પાસે આરોપીનો ફોન નંબર, યુઝરનેમ અથવા કોઈ સ્ક્રીનશોट છે?"
+    ],
+    punjabi: [
+      "ਕਿਰਪਾ ਕਰਕੇ ਕੁੱਲ ਨੁਕਸਾਨ ਦੀ ਰਕਮ ਜਾਂ ਟ੍ਰਾਂਜੈਕਸ਼ਨ ਆਈਡੀ (UTR) ਸਾਂਝੀ ਕਰੋ।",
+      "ਕੀ ਤੁਹਾਡੇ ਕੋਲ ਮੁਲਜ਼ਮ ਦਾ ਮੋਬਾਈਲ ਨੰਬਰ ਜਾਂ ਸੋਸ਼ਲ ਮੀਡੀਆ ਪ੍ਰੋਫਾਈਲ ਲਿੰਕ ਹੈ?"
+    ]
+  };
 
-  // 4. CYBERSTALKING / BLACKMAIL / HARASSMENT
-  if (isStalking) {
-    if (isBengaliScript) return "🛡️ সাইবার ব্ল্যাকমেইল সংক্রান্ত নির্দেশিকা:\n১. ব্ল্যাকমেইলারকে কোন টাকা দেবেন না।\n২. চ্যাট ও প্রোফাইলের স্ক্রিনশট রাখুন।\n৩. cybercrime.gov.in অথবা ১০৯১ নম্বরে জানান।";
-    if (isTamilScript) return "🛡️ சைபர் மிரட்டல் உதவி:\n1. எந்த பணமும் கொடுக்க வேண்டாம்.\n2. ஆதாரங்களை (Screenshots) சேமிக்கவும்.\n3. cybercrime.gov.in அல்லது 1091 ஐ அழைக்கவும்.";
-    if (isTeluguScript) return "🛡️ సైబర్ బ్లాక్‌మెయిల్ సహాయం:\n1. ఎటువంటి డబ్బు చెల్లించవద్దు.\n2. చాట్స్ & ప్రొఫైల్ స్క్రీన్‌షాట్లు సేవ్ చేసుకోండి.\n3. cybercrime.gov.in లేదా 1091 కి కాల్ చేయండి.";
-    if (isPunjabiScript) return "🛡️ ਬਲੈਕਮੇਲ ਮਦਦ:\n1. ਕੋਈ ਪੈਸਾ ਨਾ ਦਿਓ।\n2. ਸਕ੍ਰੀਨਸ਼ੌਟ ਸੰਭਾਲ ਕੇ ਰੱਖੋ।\n3. cybercrime.gov.in ਜਾਂ 1091 'ਤੇ ਕਾਲ ਕਰੋ।";
-    if (isGujaratiScript) return "🛡️ સાયબર બ્લેકમેઇલ મદદ:\n1. કોઈ પૈસા આપશો નહીં.\n2. સ્ક્રીનશોટ સુરક્ષિત રાખો.\n3. cybercrime.gov.in અથવા 1091 પર સંપર્ક કરો।";
-    if (isHindiScript) return "🛡️ साइबर ब्लैकमेल / उत्पीड़न सुरक्षा निर्देश:\n1. किसी भी ब्लैकमेलर को कोई पैसा न दें। पैसा देने से ब्लैकमेलिंग कभी बंद नहीं होती।\n2. ब्लैकमेलर के मैसेज, चैट, प्रोफाइल लिंक और फोन नंबर के स्क्रीनशॉट सुरक्षित रखें।\n3. ब्लैकमेलर को ब्लॉक करें और ऐप (WhatsApp/Instagram) पर रिपोर्ट करें।\n4. cybercrime.gov.in पर महिला एवं बाल सुरक्षा अनुभाग में गोपनीय शिकायत दर्ज करें या 1091 पर कॉल करें।";
-    if (isHinglish) return "🛡️ CYBER BLACKMAIL / HARASSMENT GUIDE:\n1. Blackmailer ko BILKUL PAISA MAT DEIN. Money dene se blackmailing rukti nahi hai.\n2. Chat, profile URL, phone number aur messages ke screenshots le kar safe rakh lein.\n3. Profile ko block aur report karein.\n4. cybercrime.gov.in par 'Women/Child Related Crime' section me anonymous complaint file karein ya 1091 par call karein.";
-    return "🛡️ CYBER BLACKMAIL & HARASSMENT ADVISORY:\n1. DO NOT PAY ANY MONEY to the extortionist. Paying money will only invite further threats.\n2. Preserve evidence: Take clear screenshots of messages, profile links, handles, and phone numbers with timestamps.\n3. Block and report the accounts on WhatsApp / Instagram / Telegram.\n4. Lodge a report at cybercrime.gov.in under the Anonymous/Women Safety section, or call 1091.";
-  }
+  // Select Scenario
+  let scenario = "general";
+  if (isCritical) scenario = "critical";
+  else if (isFinancial) scenario = "financial";
+  else if (isStalking) scenario = "stalking";
+  else if (isPhoneTheft) scenario = "phoneTheft";
 
-  // 5. STOLEN / LOST MOBILE PHONE
-  if (isPhoneTheft) {
-    if (isBengaliScript) return "📱 মোবাইল ফোন চুরি সংক্রান্ত নির্দেশিকা:\n১. সরকারি CEIR পোর্টালে (ceir.gov.in) গিয়ে IMEI ব্লক করুন।\n২. সিম কার্ড ব্লক করুন ও নিকটস্থ থানায় ডায়েরি করুন।";
-    if (isTamilScript) return "📱 போன் திருட்டு உதவி:\n1. CEIR போர்ட்டலில் (ceir.gov.in) IMEI ஐ முடக்கவும்.\n2. சிம் கார்டை முடக்கி காவல் நிலையத்தில் புகார் அளிக்கவும்.";
-    if (isTeluguScript) return "📱 ఫోన్ దొంగతనం సహాయం:\n1. CEIR పోర్టల్ (ceir.gov.in) లో IMEI ని బ్లాక్ చేయండి.\n2. SIM కార్డ్‌ను బ్లాక్ చేసి పోలీస్ స్టేషన్‌లో ఫిర్యాదు చేయండి.";
-    if (isPunjabiScript) return "📱 ਮੋਬਾਈਲ ਚੋਰੀ ਮਦਦ:\n1. CEIR ਪੋਰਟਲ (ceir.gov.in) 'ਤੇ IMEI ਬਲਾਕ ਕਰੋ।\n2. ਸਿਮ ਕਾਰਡ ਬਲਾਕ ਕਰਵਾਓ ਅਤੇ ਪੁਲਿਸ ਰਿਪੋਰਟ ਕਰੋ।";
-    if (isGujaratiScript) return "📱 ફોન ચોરી મદદ:\n1. CEIR પોર્ટલ (ceir.gov.in) પર IMEI બ્લોક કરો.\n2. સિમ કાર્ડ બ્લોક કરો અને પોલીસ સ્ટેશનમાં જાણ કરો.";
-    if (isHindiScript) return "📱 खोया / चोरी हुआ मोबाइल फोन ब्लॉक और ट्रैक करने की प्रक्रिया:\n1. दूरसंचार विभाग के पोर्टल CEIR (ceir.gov.in) पर जाएं और अपना IMEI नंबर ब्लॉक करें।\n2. सिम कार्ड ब्लॉक करने के लिए तुरंत अपने टेलीकॉम ऑपरेटर (Jio/Airtel/Vi) से संपर्क करें।\n3. नजदीकी पुलिस स्टेशन पर खोई हुई संपत्ति की रिपोर्ट दर्ज करें।";
-    if (isHinglish) return "📱 LOST / STOLEN PHONE ACTION STEPS:\n1. Government portal CEIR (ceir.gov.in) par jaakar apna IMEI block & track karein.\n2. Apne telecom operator (Jio/Airtel/Vi) ko call karke SIM block karayein.\n3. Local Police station ya state police app par Lost Property Report file karein.";
-    return "📱 LOST OR STOLEN MOBILE GUIDE:\n1. Visit the Govt CEIR Portal (ceir.gov.in) to block & trace your handset's 15-digit IMEI number.\n2. Contact your telecom operator (Jio / Airtel / Vi) immediately to block the SIM card.\n3. File a Lost Property Report / e-FIR with the local police.";
-  }
+  // Build response components
+  const langOpenings = openings[lang] || openings["english"];
+  const scenarioActions = actions[scenario] || actions["general"];
+  const actionText = scenarioActions[lang] || scenarioActions["english"] || actions[scenario]["english"];
+  
+  // Pick opening based on length hash to ensure deterministic but varied response per conversation turn
+  const openingIdx = (messageCount + history.length) % langOpenings.length;
+  const openingText = langOpenings[openingIdx];
 
-  // 6. GENERAL HELPFUL ADVISORY IN DETECTED SCRIPT
-  if (isBengaliScript) return "ধন্যবাদ। আপনার তথ্য রেকর্ড করা হয়েছে। জরুরি সাহায্য: ১৯৩০ (সাইবার ফ্রড), ১১২ (জরুরি), cybercrime.gov.in.";
-  if (isTamilScript) return "நன்றி. உங்கள் தகவல் பதிவு செய்யப்பட்டது. அவசர உதவிக்கு: 1930 (சைபர் மோசடி), 112 (அவசரம்), cybercrime.gov.in.";
-  if (isTeluguScript) return "ధన్యవాదాలు. మీ సమాచారం నమోదైంది. సాయానికి: 1930 (సైబర్ ఫ్రాడ్), 112 (అత్యవసరం), cybercrime.gov.in.";
-  if (isPunjabiScript) return "ਧੰਨਵਾਦ। ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ ਦਰਜ ਕਰ ਲਈ ਗਈ ਹੈ। ਮਦਦ ਲਈ: 1930 (ਸਾਈਬਰ ਠੱਗੀ), 112 (ਇਮਰਜੈਂਸੀ), cybercrime.gov.in.";
-  if (isGujaratiScript) return "આભાર. તમારી વિગતો નોંધવામાં આવી છે. મદદ માટે: 1930 (સાયબર ફ્રોડ), 112 (ઈમરજન્સી), cybercrime.gov.in.";
-  if (isHindiScript) return "धन्यवाद। आपकी रिपोर्ट दर्ज कर ली गई है। यदि आप तुरंत सहायता चाहते हैं: साइबर अपराध के लिए 1930, आपातकाल के लिए 112, और आधिकारिक शिकायत दर्ज करने के लिए cybercrime.gov.in का उपयोग करें। क्या आप कुछ और विवरण जोड़ना चाहते हैं?";
-  if (isHinglish) return "Thank you. Humne aapke details note kar liye hain. Instant help ke liye: Cyber Fraud helpline 1930, Emergency 112, aur official portal cybercrime.gov.in ka use karein. Kya aap kuch aur specific detail add karna chahte hain?";
+  // Pick question based on hash
+  const langQuestions = questionPool[lang] || questionPool["english"];
+  const questionIdx = (messageCount + history.length + 3) % langQuestions.length;
+  const questionText = langQuestions[questionIdx];
 
-  return "Thank you for reporting. Your information has been securely logged. For immediate helpline assistance: Cyber Financial Fraud call 1930, Emergency Safety call 112, or register at cybercrime.gov.in. Would you like to share any additional details or transaction reference numbers?";
+  // Combine into a premium, empathetic, structured output
+  return `💬 [Vanguard Support System]
+
+${openingText}
+
+${actionText}
+
+❓ ${questionText}`;
 }
 
 // ==========================================
@@ -241,7 +359,18 @@ router.post("/chat/conversations", async (req, res): Promise<void> => {
     }).returning();
 
     // 2. Add welcome message from chatbot
-    const welcomeText = "Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure. Please describe the incident you would like to report so we can alert the duty officers privately.";
+    const welcomeText = `🔒 SECURE INTENTION & INTAKE PORTAL / सुरक्षित रिपोर्टिंग पोर्टल
+
+Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure.
+आप अपनी शिकायत किसी भी भाषा (English, Hindi, Hinglish, Marathi, Gujarati, Bengali, Tamil, Telugu, Punjabi) में लिख सकते हैं।
+
+Quick Helplines / त्वरित सहायता:
+• Cyber Financial Fraud (साइबर धोखाधड़ी): Call 1930 / cybercrime.gov.in
+• Stolen/Lost Phone (मोबाइल चोरी): ceir.gov.in
+• Emergency Safety (आपातकालीन सुरक्षा): Call 112
+• Women Safety (महिला सुरक्षा): Call 1091
+
+Please describe your issue below in detail / कृपया अपनी समस्या का विवरण नीचे लिखें:`;
     await db.insert(messages).values({
       conversationId: newConv.id,
       role: "assistant",
@@ -274,7 +403,18 @@ router.get("/chat/conversations/:id/messages", async (req, res): Promise<void> =
         title: `Confidential Report #${conversationId}`,
       });
       // Add welcome message
-      const welcomeText = "Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure. Please describe the incident you would like to report so we can alert the duty officers privately.";
+      const welcomeText = `🔒 SECURE INTENTION & INTAKE PORTAL / सुरक्षित रिपोर्टिंग पोर्टल
+
+Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure.
+आप अपनी शिकायत किसी भी भाषा (English, Hindi, Hinglish, Marathi, Gujarati, Bengali, Tamil, Telugu, Punjabi) में लिख सकते हैं।
+
+Quick Helplines / त्वरित सहायता:
+• Cyber Financial Fraud (साइबर धोखाधड़ी): Call 1930 / cybercrime.gov.in
+• Stolen/Lost Phone (मोबाइल चोरी): ceir.gov.in
+• Emergency Safety (आपातकालीन सुरक्षा): Call 112
+• Women Safety (महिला सुरक्षा): Call 1091
+
+Please describe your issue below in detail / कृपया अपनी समस्या का विवरण नीचे लिखें:`;
       await db.insert(messages).values({
         conversationId,
         role: "assistant",
@@ -317,7 +457,18 @@ router.post("/chat/conversations/:id/messages", async (req, res): Promise<void> 
       }).returning();
       conv = newConv;
 
-      const welcomeText = "Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure. Please describe the incident you would like to report so we can alert the duty officers privately.";
+      const welcomeText = `🔒 SECURE INTENTION & INTAKE PORTAL / सुरक्षित रिपोर्टिंग पोर्टल
+
+Welcome to the Confidential Reporting Workspace. Your session is fully encrypted and secure.
+आप अपनी शिकायत किसी भी भाषा (English, Hindi, Hinglish, Marathi, Gujarati, Bengali, Tamil, Telugu, Punjabi) में लिख सकते हैं।
+
+Quick Helplines / त्वरित सहायता:
+• Cyber Financial Fraud (साइबर धोखाधड़ी): Call 1930 / cybercrime.gov.in
+• Stolen/Lost Phone (मोबाइल चोरी): ceir.gov.in
+• Emergency Safety (आपातकालीन सुरक्षा): Call 112
+• Women Safety (महिला सुरक्षा): Call 1091
+
+Please describe your issue below in detail / कृपया अपनी समस्या का विवरण नीचे लिखें:`;
       await db.insert(messages).values({
         conversationId,
         role: "assistant",
