@@ -91,6 +91,9 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.5.3
         version: 0.5.3
+      '@google/generative-ai':
+        specifier: ^0.21.0
+        version: 0.21.0
       '@workspace/api-zod':
         specifier: workspace:*
         version: link:../../lib/api-zod

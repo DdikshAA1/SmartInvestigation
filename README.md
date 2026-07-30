@@ -10,6 +10,18 @@
 
 Vanguard AI is a state-of-the-art, next-generation **Smart Policing & Investigation Platform** designed to revolutionize public safety intake, crime analysis, and suspect tracking. Powered by a 3-tiered AI agent (OpenAI GPT-4o, Gemini 1.5 Flash, and a Local Fallback NLP Engine), the platform acts as an automated, empathetic intake officer capable of processing, classifying, and reporting incidents dynamically in over 10+ regional and global languages (including Hindi, Hinglish, Bengali, Tamil, Telugu, and more).
 
+## 🖥️ Platform Interface
+
+Here is a preview of the Vanguard Smart Policing interface:
+
+| Dashboard (Command Center) | Confidential Intake Workstation |
+|:---:|:---:|
+| ![Dashboard](./docs/screenshots/dashboard.png) | ![Confidential Intake Workspace](./docs/screenshots/chat.png) |
+
+| OSINT Intelligence Target Workspace |
+|:---:|
+| ![OSINT Target Tracking](./docs/screenshots/osint.png) |
+
 ---
 
 ## 🌟 Core Features
