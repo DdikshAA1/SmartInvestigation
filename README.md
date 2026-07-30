@@ -1,5 +1,7 @@
 # 🛡️ Vanguard AI: Smart Policing & Investigation Platform
 
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_Link-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://smart-policing-ai.vercel.app/)
+
 [![Vite](https://img.shields.io/badge/Vite-B736FF?style=flat&logo=vite&logoColor=white)](#)
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](#)
