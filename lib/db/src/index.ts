@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import * as schema from "./schema";
 
 const dataDir = process.env.VERCEL
-  ? "/tmp/pglite-data"
+  ? undefined
   : (process.env.PG_DATA_DIR || "./pglite-data");
 
 export const client = new PGlite(dataDir);
