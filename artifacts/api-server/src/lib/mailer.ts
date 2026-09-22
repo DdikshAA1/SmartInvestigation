@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "dikshar1123@gmail.com";
+
 const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
 const smtpPort = Number(process.env.SMTP_PORT) || 587;
 const smtpUser = process.env.SMTP_USER;
@@ -20,8 +22,8 @@ if (smtpUser && smtpPass) {
 }
 
 export async function sendEmailNotification(subject: string, text: string) {
-  const recipient = "dikshar1123@gmail.com";
-  console.log(`[EMAIL NOTIFICATION TO ${recipient}]: ${subject}\nContent: ${text}`);
+  const recipient = ADMIN_EMAIL;
+  console.log(`[ADMIN NOTIFICATION TO ${recipient}]: ${subject}\nContent:\n${text}`);
 
   if (!transporter) {
     try {
@@ -36,7 +38,7 @@ export async function sendEmailNotification(subject: string, text: string) {
         },
       });
       const info = await testTransporter.sendMail({
-        from: '"Vanguard Alert System" <no-reply@vanguard-intel.com>',
+        from: '"Vanguard Admin Dispatch" <no-reply@vanguard-intel.com>',
         to: recipient,
         subject,
         text,
@@ -50,12 +52,12 @@ export async function sendEmailNotification(subject: string, text: string) {
 
   try {
     const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || "Vanguard AI Alert"}" <${process.env.SMTP_FROM_EMAIL || smtpUser}>`,
+      from: `"${process.env.SMTP_FROM_NAME || "Vanguard Admin Dispatch"}" <${process.env.SMTP_FROM_EMAIL || smtpUser}>`,
       to: recipient,
       subject,
       text,
     });
-    console.log(`[Email Alert Sent successfully]: MessageID: ${info.messageId}`);
+    console.log(`[Email Alert Sent successfully to ${recipient}]: MessageID: ${info.messageId}`);
   } catch (err) {
     console.error("Failed to send email alert via configured SMTP:", err);
   }

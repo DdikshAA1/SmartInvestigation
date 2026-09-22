@@ -520,14 +520,25 @@ Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112
 
       const apiKeyVal = process.env.GROQ_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY || "";
       const isGroq = apiKeyVal.startsWith("gsk_") || Boolean(process.env.GROQ_API_KEY);
-      const modelName = process.env.AI_MODEL || (isGroq ? "llama-3.1-8b-instant" : "gpt-4o");
+      const candidateModels = process.env.AI_MODEL
+        ? [process.env.AI_MODEL]
+        : isGroq
+        ? ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama3-8b-8192", "mixtral-8x7b-32768"]
+        : ["gpt-4o", "gpt-4o-mini"];
 
-      const response = await openai.chat.completions.create({
-        model: modelName,
-        max_tokens: 500,
-        messages: messagesPrompt,
-      });
-      replyContent = response.choices[0]?.message?.content ?? "";
+      for (const modelCandidate of candidateModels) {
+        try {
+          const response = await openai.chat.completions.create({
+            model: modelCandidate,
+            max_tokens: 500,
+            messages: messagesPrompt,
+          });
+          replyContent = response.choices[0]?.message?.content ?? "";
+          if (replyContent) break;
+        } catch (mErr) {
+          console.warn(`Model ${modelCandidate} failed, trying next candidate...`);
+        }
+      }
     } catch (aiErr) {
       console.warn("AI API call bypassed/failed, trying Gemini AI fallback...", aiErr);
     }

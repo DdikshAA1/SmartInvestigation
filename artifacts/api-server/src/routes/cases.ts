@@ -11,6 +11,8 @@ import {
   ListCasesQueryParams,
 } from "@workspace/api-zod";
 
+import { sendEmailNotification } from "../lib/mailer";
+
 const router: IRouter = Router();
 
 router.get("/cases", async (req, res): Promise<void> => {
@@ -48,6 +50,30 @@ router.post("/cases", async (req, res): Promise<void> => {
     notes: parsed.data.notes ?? null,
     status: "open",
   }).returning();
+
+  // Async Email Alert to Admin dikshar1123@gmail.com
+  const mailSubject = `📁 NEW INVESTIGATION DOSSIER OPENED: #${newCase.id} - ${newCase.title}`;
+  const mailText = `
+VANGUARD INVESTIGATION DOSSIER CREATED
+---------------------------------------------
+Case ID: #${newCase.id}
+Title: ${newCase.title}
+Type: ${newCase.type}
+Priority: ${newCase.priority.toUpperCase()}
+Assigned Officer: ${newCase.officerAssigned}
+Status: ${newCase.status}
+Timestamp: ${new Date().toLocaleString()}
+
+Description:
+"${newCase.description}"
+
+Notes: ${newCase.notes ?? "None"}
+
+To view or reassign this dossier, check the Vanguard Admin Workspace.
+`;
+  sendEmailNotification(mailSubject, mailText).catch(err => {
+    console.error("Failed to send new case email notification:", err);
+  });
 
   res.status(201).json({ ...newCase, createdAt: newCase.createdAt.toISOString(), updatedAt: newCase.updatedAt.toISOString() });
 });

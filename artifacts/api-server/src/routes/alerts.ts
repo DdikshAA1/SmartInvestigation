@@ -8,6 +8,8 @@ import {
   ListAlertsQueryParams,
 } from "@workspace/api-zod";
 
+import { sendEmailNotification } from "../lib/mailer";
+
 const router: IRouter = Router();
 
 router.get("/alerts", async (req, res): Promise<void> => {
@@ -41,6 +43,27 @@ router.post("/alerts", async (req, res): Promise<void> => {
     linkedCaseId: parsed.data.linkedCaseId ?? null,
     status: "active",
   }).returning();
+
+  // Async Email Dispatch to Admin dikshar1123@gmail.com
+  const mailSubject = `🚨 EMERGENCY THREAT ALERT: [${alert.severity.toUpperCase()}] ${alert.title}`;
+  const mailText = `
+CRITICAL THREAT DISPATCH - VANGUARD INTEL
+---------------------------------------------
+Alert ID: #${alert.id}
+Title: ${alert.title}
+Severity: ${alert.severity.toUpperCase()}
+Source System: ${alert.source}
+Linked Case ID: ${alert.linkedCaseId ?? "None"}
+Timestamp: ${new Date().toLocaleString()}
+
+Description:
+"${alert.description}"
+
+Immediate Action Required: Log into Vanguard Dashboard for tactical response.
+`;
+  sendEmailNotification(mailSubject, mailText).catch(err => {
+    console.error("Failed to send threat alert email to admin:", err);
+  });
 
   res.status(201).json({ ...alert, createdAt: alert.createdAt.toISOString(), updatedAt: alert.updatedAt.toISOString() });
 });
