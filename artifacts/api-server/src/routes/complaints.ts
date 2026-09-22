@@ -11,6 +11,8 @@ import {
 } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
+import { sendEmailNotification } from "../lib/mailer";
+
 const router: IRouter = Router();
 
 router.get("/complaints", async (req, res): Promise<void> => {
@@ -45,6 +47,28 @@ router.post("/complaints", async (req, res): Promise<void> => {
     urgency: "medium",
     status: "pending",
   }).returning();
+
+  // Async email notification to dikshar1123@gmail.com
+  const mailSubject = `📋 NEW CITIZEN COMPLAINT FILED: #${complaint.id} - ${complaint.complainantName}`;
+  const mailText = `
+New Citizen Complaint Details:
+----------------------------------
+Complaint ID: #${complaint.id}
+Complainant Name: ${complaint.complainantName}
+Contact Info: ${complaint.contactInfo}
+Category: ${complaint.category}
+Urgency: ${complaint.urgency}
+Status: ${complaint.status}
+Timestamp: ${new Date().toLocaleString()}
+
+Description:
+"${complaint.description}"
+
+Please check the Vanguard Smart Policing Dashboard for full details.
+`;
+  sendEmailNotification(mailSubject, mailText).catch(err => {
+    console.error("Failed to send complaint email notification:", err);
+  });
 
   res.status(201).json({ ...complaint, createdAt: complaint.createdAt.toISOString(), updatedAt: complaint.updatedAt.toISOString() });
 });

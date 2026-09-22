@@ -4,70 +4,9 @@ import { eq, sql } from "drizzle-orm";
 import { CreateConversationBody, SendMessageBody } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { gemini } from "@workspace/integrations-gemini-ai-server";
-import nodemailer from "nodemailer";
+import { sendEmailNotification } from "../lib/mailer";
 
 const router: IRouter = Router();
-
-const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
-const smtpPort = Number(process.env.SMTP_PORT) || 587;
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-
-let transporter: nodemailer.Transporter | null = null;
-
-if (smtpUser && smtpPass) {
-  transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
-    auth: {
-      user: smtpUser,
-      pass: smtpPass,
-    },
-  });
-}
-
-async function sendEmailNotification(subject: string, text: string) {
-  const recipient = "dikshar1123@gmail.com";
-  console.log(`[EMAIL NOTIFICATION TO ${recipient}]: ${subject}\nContent: ${text}`);
-
-  if (!transporter) {
-    try {
-      const testAccount = await nodemailer.createTestAccount();
-      const testTransporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      });
-      const info = await testTransporter.sendMail({
-        from: '"Vanguard Alert System" <no-reply@vanguard-intel.com>',
-        to: recipient,
-        subject,
-        text,
-      });
-      console.log(`[Email Alert Sent (Ethereal test)]: Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    } catch (e) {
-      console.error("Failed to send email alert via mock Ethereal SMTP:", e);
-    }
-    return;
-  }
-
-  try {
-    const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || "Vanguard AI Alert"}" <${process.env.SMTP_FROM_EMAIL || smtpUser}>`,
-      to: recipient,
-      subject,
-      text,
-    });
-    console.log(`[Email Alert Sent successfully]: MessageID: ${info.messageId}`);
-  } catch (err) {
-    console.error("Failed to send email alert via configured SMTP:", err);
-  }
-}
 
 // ==========================================
 // Local Rule-Based Chatbot Intake Tree
@@ -581,7 +520,7 @@ Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112
 
       const apiKeyVal = process.env.GROQ_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY || "";
       const isGroq = apiKeyVal.startsWith("gsk_") || Boolean(process.env.GROQ_API_KEY);
-      const modelName = process.env.AI_MODEL || (isGroq ? "llama-3.3-70b-versatile" : "gpt-4o");
+      const modelName = process.env.AI_MODEL || (isGroq ? "llama-3.1-8b-instant" : "gpt-4o");
 
       const response = await openai.chat.completions.create({
         model: modelName,
