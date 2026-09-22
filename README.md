@@ -68,6 +68,7 @@ Here is a preview of the Vanguard Smart Policing interface:
 Smart-Policing-AI/
 ├── api/                             # Serverless API deployment entry point
 ├── artifacts/
+
 │   ├── api-server/                  # Express backend & database setup
 │   │   ├── src/
 │   │   │   ├── routes/              # Routes for chat, suspects, alerts, cases

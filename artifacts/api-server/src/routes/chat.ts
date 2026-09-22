@@ -579,14 +579,18 @@ Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112
         }
       ];
 
+      const apiKeyVal = process.env.GROQ_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY || "";
+      const isGroq = apiKeyVal.startsWith("gsk_") || Boolean(process.env.GROQ_API_KEY);
+      const modelName = process.env.AI_MODEL || (isGroq ? "llama-3.3-70b-versatile" : "gpt-4o");
+
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: modelName,
         max_tokens: 500,
         messages: messagesPrompt,
       });
       replyContent = response.choices[0]?.message?.content ?? "";
     } catch (aiErr) {
-      console.warn("OpenAI API call bypassed/failed, trying Gemini AI...", aiErr);
+      console.warn("AI API call bypassed/failed, trying Gemini AI fallback...", aiErr);
     }
 
     // Tier 2: Gemini AI if OpenAI was empty or failed

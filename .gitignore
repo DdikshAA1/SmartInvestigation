@@ -61,3 +61,13 @@ pglite-data
 
 
 .vercel
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# OS / Windows special files
+nul
+
+
