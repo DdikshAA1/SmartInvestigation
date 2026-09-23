@@ -221,21 +221,29 @@ function getLocalChatbotReply(userMessage: string, messageCount: number, history
   else if (isStalking) scenario = "stalking";
   else if (isPhoneTheft) scenario = "phoneTheft";
 
-  // Build response components
+  const isFollowUp = history.length > 2;
+
+  if (isFollowUp) {
+    const followUpAdvisories: Record<string, string> = {
+      hinglish: `💬 [Vanguard Officer Support]\n\nJi, aapki saari details note kar li gayi hain. Is mamle me legal action aur investigation ke liye evidence collect karna sabse zaroori hai:\n\n1. Transaction UTR / Ref ID aur bank statement ki copy safe rakhein.\n2. Suspect ka phone number, chat screenshots, aur UPI ID preserve karein.\n3. Complaints portal par official FIR log karne ke liye tayyar rahein.\n\n❓ Kya aapke paas suspect ka koi UPI ID ya bank account details hain?`,
+      hindi: `💬 [वैनगार्ड अधिकारी सहायता]\n\nजी, आपकी जानकारी दर्ज कर ली गई है। इस मामले में साक्ष्य (Evidence) सुरक्षित रखना अति आवश्यक है:\n\n1. ट्रांजैक्शन आईडी (UTR) और बैंक स्टेटमेंट संभाल कर रखें।\n2. संदेही के मोबाइल नंबर, चैट और प्रोफाइल स्क्रीनशॉट सुरक्षित रखें।\n3. cybercrime.gov.in पर आधिकारिक रिपोर्ट के लिए तैयार रहें।\n\n❓ क्या आपके पास आरोपी की यूपीआई आईडी या बैंक खाते की जानकारी है?`,
+      english: `💬 [Vanguard Officer Support]\n\nThank you for providing those details. To assist officer review and evidence collection:\n\n1. Please preserve all transaction reference numbers (UTR) and bank statements.\n2. Save all chat logs, suspect phone numbers, and profile screenshots.\n3. Keep these ready for official police dossier filing.\n\n❓ Do you have the suspect's UPI ID or bank account number?`
+    };
+    return followUpAdvisories[lang] || followUpAdvisories["english"];
+  }
+
+  // Initial turn: Build response components
   const langOpenings = openings[lang] || openings["english"];
   const scenarioActions = actions[scenario] || actions["general"];
   const actionText = scenarioActions[lang] || scenarioActions["english"] || actions[scenario]["english"];
   
-  // Pick opening based on length hash to ensure deterministic but varied response per conversation turn
   const openingIdx = (messageCount + history.length) % langOpenings.length;
   const openingText = langOpenings[openingIdx];
 
-  // Pick question based on hash
   const langQuestions = questionPool[lang] || questionPool["english"];
   const questionIdx = (messageCount + history.length + 3) % langQuestions.length;
   const questionText = langQuestions[questionIdx];
 
-  // Combine into a premium, empathetic, structured output
   return `💬 [Vanguard Support System]
 
 ${openingText}
@@ -498,15 +506,20 @@ To view this full secure thread, please check the Vanguard Admin Dashboard.
           role: "system" as const,
           content: `You are Vanguard AI Cyber & Crime Assistant, an expert, highly empathetic, NLP-driven Police & Cyber Intake Officer.
 
+DEEP CONTEXTUAL REASONING & ADAPTIVE INTELLIGENCE:
+1. CONTEXT THINKING: Read the user's latest statement carefully. Think step-by-step about what specific issue they are reporting (money lost, bank name, app used, suspect contact, threat level, emotional state). Address their exact words directly.
+2. NO BOILERPLATE REPETITION: Do NOT repeat standard greetings, introductions, or generic helpline numbers (1930, 112, CEIR) if they have ALREADY been mentioned earlier in the conversation history. Keep the conversation moving forward dynamically.
+3. INTAKE PROGRESSION:
+   - Acknowledge what the user just said with genuine empathy.
+   - Answer any specific questions they asked.
+   - Ask 1 relevant follow-up question to collect key evidence (such as UTR/Transaction ID, suspect handle, phone number, screenshots, or incident date/time).
+
 STRICT LANGUAGE & SCRIPT MIRRORING CONSTRAINT:
 - The user's input language has been pre-detected as: ${detectedLang.toUpperCase()}.
 - You MUST reply in the EXACT SAME LANGUAGE and SCRIPT/DIALECT as detected.
-- If HINGLISH, you MUST write your entire response in Romanized Hindi/Hinglish (e.g., "Aap bilkul chinta mat kijiye. Hum aapki poori help karenge. Kya aapka paisa online transaction se fraud hua hai?"). Do NOT use Hindi script and do NOT respond in English.
+- If HINGLISH, you MUST write your entire response in Romanized Hindi/Hinglish (e.g., "Aap bilkul chinta mat kijiye. Hum aapki poori help karenge. Kya aapne transaction UTR check kiya hai?"). Do NOT use Hindi Devanagari script and do NOT respond in English.
 - If HINDI, write in Devanagari Hindi script.
-- If BENGALI, TAMIL, TELUGU, GUJARATI, PUNJABI, etc., write in that exact script.
-- NEVER reply in English unless the detected language is English.
-
-Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112 for Emergency, CEIR for Lost Phone, 1091 for Women Safety) and ask 1-2 key follow-up questions.`
+- NEVER reply in English unless the detected language is English.`
         },
         ...history.map(m => ({
           role: m.role as "user" | "assistant" | "system",
@@ -514,7 +527,7 @@ Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112
         })),
         {
           role: "system" as const,
-          content: `STRICT REQUIREMENT: The user's last message is written in ${detectedLang.toUpperCase()}. You MUST compose your entire response in ${detectedLang.toUpperCase()}. If HINGLISH, you must write only in Romanized Hindi (Hinglish). Do NOT reply in English.`
+          content: `STRICT REQUIREMENT: Analyze the user's input thoughtfully and respond uniquely in ${detectedLang.toUpperCase()} without repeating past greetings or boilerplate headers.`
         }
       ];
 
@@ -523,7 +536,7 @@ Provide real, practical helpline assistance (1930 for Cyber Financial Fraud, 112
       const candidateModels = process.env.AI_MODEL
         ? [process.env.AI_MODEL]
         : isGroq
-        ? ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama3-8b-8192", "mixtral-8x7b-32768"]
+        ? ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
         : ["gpt-4o", "gpt-4o-mini"];
 
       for (const modelCandidate of candidateModels) {
